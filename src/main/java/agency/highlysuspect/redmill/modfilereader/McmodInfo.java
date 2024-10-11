@@ -16,10 +16,10 @@ import java.util.function.Consumer;
 public class McmodInfo implements IConfigurable {
 	@SuppressWarnings("Convert2Diamond")
 	public McmodInfo(InputStream in) throws Exception {
-		mcmodInfoEntries = new Gson().fromJson(new InputStreamReader(in), new TypeToken<List<McmodInfoEntry>>(){});
+		entries = new Gson().fromJson(new InputStreamReader(in), new TypeToken<List<McmodInfoEntry>>(){});
 	}
 	
-	private final List<McmodInfoEntry> mcmodInfoEntries;
+	public final List<McmodInfoEntry> entries;
 	
 	/**
 	 * @see net.neoforged.fml.loading.moddiscovery.ModFileInfo#ModFileInfo(ModFile, IConfigurable, Consumer)
@@ -37,7 +37,7 @@ public class McmodInfo implements IConfigurable {
 	@Override
 	public List<? extends IConfigurable> getConfigList(String... key) {
 		return switch(key[0]) {
-			case "mods" -> mcmodInfoEntries;
+			case "mods" -> entries;
 			default -> List.of();
 		};
 	}

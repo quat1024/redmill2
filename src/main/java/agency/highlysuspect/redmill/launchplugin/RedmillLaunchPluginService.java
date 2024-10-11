@@ -23,12 +23,12 @@ public class RedmillLaunchPluginService implements ILaunchPluginService {
 	}
 	
 	@Override
-	public boolean processClass(Phase phase, ClassNode classNode, Type classType) {
+	public boolean processClass(Phase phase, ClassNode classNode, Type classType, String reason) {
 		if(phase != Phase.BEFORE) return false;
 		
-		System.out.println("Got class: " + classType.getInternalName());
+		System.out.println("Got class: " + classType.getInternalName() + " reason: " + reason);
 		System.out.println("The game will now probably crash");
 		
-		return false;
+		return true;
 	}
 }
