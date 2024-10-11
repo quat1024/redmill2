@@ -1,0 +1,41 @@
+modLoader="javafml"
+loaderVersion="[4,)"
+license="LGPL-3.0-or-later"
+
+[[mods]]
+modId="redmill2"
+version="${version}"
+displayName="Red Mill"
+displayURL="https://highlysupect.agency"
+
+#logoFile="examplemod.png" #optional
+#credits="" #optional
+
+authors="quaternary"
+description='''Huh, this seems familiar.'''
+
+# The [[mixins]] block allows you to declare your mixin config to FML so that it gets loaded.
+#[[mixins]]
+#config="redmill.mixins.json"
+
+# The [[accessTransformers]] block allows you to declare where your AT file is.
+# If this block is omitted, a fallback attempt will be made to load an AT from META-INF/accesstransformer.cfg
+#[[accessTransformers]]
+#file="META-INF/accesstransformer.cfg"
+
+# The coremods config file path is not configurable and is always loaded from META-INF/coremods.json
+
+[[dependencies.redmill2]]
+    modId="neoforge"
+    type="required"
+    versionRange="[21.0.0-beta,)"
+    ordering="NONE"
+    side="BOTH"
+
+# Here's another dependency
+[[dependencies.redmill2]]
+    modId="minecraft"
+    type="required"
+    versionRange="[1.21,1.21.69)"
+    ordering="NONE"
+    side="BOTH"
