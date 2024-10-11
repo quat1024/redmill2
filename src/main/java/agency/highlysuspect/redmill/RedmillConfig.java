@@ -10,6 +10,9 @@ public class RedmillConfig {
 	public boolean initMods = true;
 	public boolean refuseCoremods = true;
 	
+	public boolean dumpClasses = false;
+	public boolean earlyDump = false;
+	
 	public static RedmillConfig load(Path configFolder) throws Exception {
 		RedmillConfig config = new RedmillConfig();
 		
@@ -28,7 +31,13 @@ public class RedmillConfig {
 				"",
 				"# Whether to crash if a coremod is detected.",
 				"# (Coremods do not work under Red Mill, and are not loaded.)",
-				"refuse_coremods=true"
+				"refuse_coremods=true",
+				"",
+				"# Dump transformed classes (and a few other things) to redmill-dump",
+				"dump_classes=false",
+				"",
+				"# Force all mod classes through the transformer early, so they all get dumped",
+				"early_dump=false"
 			));
 		} else {
 			Properties props = new Properties();
@@ -37,6 +46,8 @@ public class RedmillConfig {
 			config.modidPrefix = props.getProperty("modid_prefix", config.modidPrefix);
 			config.initMods = bool(props, "init_mods", config.initMods);
 			config.refuseCoremods = bool(props, "refuse_coremods", config.refuseCoremods);
+			config.dumpClasses = bool(props, "dump_classes", config.dumpClasses);
+			config.earlyDump = bool(props, "early_dump", config.earlyDump);
 		}
 		
 		return config;

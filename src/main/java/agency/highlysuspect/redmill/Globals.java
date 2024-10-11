@@ -51,10 +51,6 @@ public class Globals {
 			Members methods = new Members().read(methodsIn, mem);
 			Srg srg = new Srg().read(joinedIn, mem);
 			minecraft147Srg = srg.named(fields, methods);
-			
-			//TODO: dump
-			minecraft147Srg.writeTo(Paths.get(".").resolve("redmill-dump").resolve("joined-named.srg"));
-			
 		} catch (Exception e) {
 			throw mkRethrow(e, "Failed to load red mill metadata");
 		}

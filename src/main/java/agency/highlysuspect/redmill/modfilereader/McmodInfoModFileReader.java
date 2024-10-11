@@ -14,6 +14,7 @@ import cpw.mods.jarhandling.SecureJar;
 import cpw.mods.jarhandling.impl.SimpleJarMetadata;
 import net.neoforged.fml.loading.moddiscovery.ModFile;
 import net.neoforged.fml.loading.moddiscovery.ModFileInfo;
+import net.neoforged.fml.loading.progress.StartupNotificationManager;
 import net.neoforged.neoforgespi.locating.IModFile;
 import net.neoforged.neoforgespi.locating.IModFileReader;
 import net.neoforged.neoforgespi.locating.ModFileDiscoveryAttributes;
@@ -38,6 +39,8 @@ public class McmodInfoModFileReader implements IModFileReader {
 			Consts.LOG.info("Got jar with MCMOD info: {} attrs {}", jar.getPrimaryPath(), attributes);
 			
 			try {
+				StartupNotificationManager.addModMessage("(Red Mill) Examining " + jar.getPrimaryPath().getFileName());
+				
 				//does this have a coremod in it?
 				//Note that jar.getManifest() is blank at this point in time, so read the file manually
 				Optional<URI> manifestMf = jar.findFile("META-INF/MANIFEST.MF");
@@ -71,11 +74,13 @@ public class McmodInfoModFileReader implements IModFileReader {
 					Globals.addModContainerExt(new ModContainerExt(e));
 				}
 				
-				//TODO: debug dumpin
-				Path dir = Paths.get(".").resolve("redmill-dump");
-				Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
-				Files.createDirectories(dir);
-				Files.writeString(dir.resolve(moduleId + ".json"), gson.toJson(rmMeta.toJson()));
+				//dump the scanned metadata
+				if(Globals.CFG.dumpClasses) {
+					Path dir = Paths.get(".").resolve("redmill-dump");
+					Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
+					Files.createDirectories(dir);
+					Files.writeString(dir.resolve(moduleId + ".json"), gson.toJson(rmMeta.toJson()));
+				}
 				
 				//create securejar
 				JarMetadata jarMeta = new SimpleJarMetadata(moduleId, moduleVersion, jar::getPackages, jar.getMetaInfServices());
