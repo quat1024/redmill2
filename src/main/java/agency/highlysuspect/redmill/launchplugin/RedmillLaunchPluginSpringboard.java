@@ -1,6 +1,6 @@
 package agency.highlysuspect.redmill.launchplugin;
 
-import agency.highlysuspect.redmill.CheekyGlobalState;
+import agency.highlysuspect.redmill.Globals;
 import agency.highlysuspect.redmill.Consts;
 import cpw.mods.modlauncher.LaunchPluginHandler;
 import cpw.mods.modlauncher.Launcher;
@@ -61,7 +61,7 @@ public class RedmillLaunchPluginSpringboard implements ITransformationService {
 		Path gameDir = environment.getProperty(IEnvironment.Keys.GAMEDIR.get())
 			.orElseThrow(() -> new IllegalStateException("No gamedir?"));
 		
-		CheekyGlobalState.loadConfig(gameDir);
+		Globals.loadConfig(gameDir);
 	}
 	
 	@Override

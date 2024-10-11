@@ -1,6 +1,6 @@
 package agency.highlysuspect.redmill.modfilereader;
 
-import agency.highlysuspect.redmill.CheekyGlobalState;
+import agency.highlysuspect.redmill.Globals;
 import net.neoforged.neoforgespi.language.IConfigurable;
 
 import java.util.List;
@@ -36,7 +36,7 @@ public class McmodInfoEntryConfig implements IConfigurable {
 				modernModid = "unnamed";
 			}
 			
-			modernModid = CheekyGlobalState.CFG.modidPrefix + modernModid;
+			modernModid = Globals.CFG.modidPrefix + modernModid;
 			
 			//lowercase only
 			modernModid = modernModid

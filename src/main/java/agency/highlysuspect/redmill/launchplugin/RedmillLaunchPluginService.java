@@ -1,6 +1,6 @@
 package agency.highlysuspect.redmill.launchplugin;
 
-import agency.highlysuspect.redmill.CheekyGlobalState;
+import agency.highlysuspect.redmill.Globals;
 import agency.highlysuspect.redmill.Consts;
 import cpw.mods.modlauncher.serviceapi.ILaunchPluginService;
 import org.objectweb.asm.Type;
@@ -19,7 +19,7 @@ public class RedmillLaunchPluginService implements ILaunchPluginService {
 	
 	@Override
 	public EnumSet<Phase> handlesClass(Type classType, boolean isEmpty) {
-		return CheekyGlobalState.TO_BE_MILLED.contains(classType) ? BEFORE : NOPE;
+		return Globals.TO_BE_MILLED.contains(classType) ? BEFORE : NOPE;
 	}
 	
 	@Override

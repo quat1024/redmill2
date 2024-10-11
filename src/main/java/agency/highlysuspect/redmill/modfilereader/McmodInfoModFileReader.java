@@ -1,6 +1,6 @@
 package agency.highlysuspect.redmill.modfilereader;
 
-import agency.highlysuspect.redmill.CheekyGlobalState;
+import agency.highlysuspect.redmill.Globals;
 import agency.highlysuspect.redmill.Consts;
 import agency.highlysuspect.redmill.ModContainerExt;
 import cpw.mods.jarhandling.JarContents;
@@ -35,7 +35,7 @@ public class McmodInfoModFileReader implements IModFileReader {
 				if(manifestMf.isPresent()) {
 					Manifest actualManifest = new Manifest(manifestMf.get().toURL().openStream());
 					Attributes mainAttrs = actualManifest.getMainAttributes();
-					if(CheekyGlobalState.CFG.refuseCoremods && mainAttrs.getValue("FMLCorePlugin") != null) {
+					if(Globals.CFG.refuseCoremods && mainAttrs.getValue("FMLCorePlugin") != null) {
 						throw new IllegalStateException("Mod " + jar.getPrimaryPath() + " contains a coremod. This is not supported.");
 					}
 				}
@@ -54,7 +54,7 @@ public class McmodInfoModFileReader implements IModFileReader {
 				
 				//TODO: find a better spot for this?
 				for(McmodInfoEntryConfig e : mcmodInfoConfig.entries) {
-					CheekyGlobalState.addModContainerExt(new ModContainerExt(e, moduleId));
+					Globals.addModContainerExt(new ModContainerExt(e, moduleId));
 				}
 				
 				//create securejar

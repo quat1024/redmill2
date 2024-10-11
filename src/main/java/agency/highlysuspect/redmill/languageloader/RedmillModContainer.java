@@ -1,6 +1,6 @@
 package agency.highlysuspect.redmill.languageloader;
 
-import agency.highlysuspect.redmill.CheekyGlobalState;
+import agency.highlysuspect.redmill.Globals;
 import agency.highlysuspect.redmill.Consts;
 import agency.highlysuspect.redmill.ModContainerExt;
 import net.neoforged.bus.api.IEventBus;
@@ -20,16 +20,16 @@ public class RedmillModContainer extends ModContainer {
 		super(info);
 		
 		//get the ModContainerExt, which better exist
-		ModContainerExt ext = CheekyGlobalState.getModContainerByNewId(info.getModId());
+		ModContainerExt ext = Globals.getModContainerByNewId(info.getModId());
 		if(ext == null) {
 			throw new IllegalStateException("No ModContainerExt for new modid " + info.getModId());
 		}
 		
-		CheekyGlobalState.associateWithModInfo(ext, info);
-		CheekyGlobalState.associateWithModContainer(ext, this);
+		Globals.associateWithModInfo(ext, info);
+		Globals.associateWithModContainer(ext, this);
 		
 		//tell RedmillLaunchPluginService about the classes in this jar
-		CheekyGlobalState.classesToBeMilled(modFileScanData);
+		Globals.classesToBeMilled(modFileScanData);
 		
 		//find the old modid, and find the java module the mod lives inside
 		String oldModid = ext.oldModid;
@@ -49,7 +49,7 @@ public class RedmillModContainer extends ModContainer {
 			}
 		}
 		
-		if(!CheekyGlobalState.CFG.initMods) {
+		if(!Globals.CFG.initMods) {
 			Consts.LOG.warn("initMods disabled - not loading that entrypoint");
 			entrypoint = null;
 		}

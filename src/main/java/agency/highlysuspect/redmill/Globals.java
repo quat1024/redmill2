@@ -12,7 +12,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class CheekyGlobalState {
+public class Globals {
+	
+	/// config ///
+	
 	public static RedmillConfig CFG = new RedmillConfig();
 	
 	public static void loadConfig(Path gameDir) {
@@ -24,16 +27,20 @@ public class CheekyGlobalState {
 		}
 	}
 	
+	/// class list ///
+	
 	public static final Set<Type> TO_BE_MILLED = Sets.newConcurrentHashSet();
 	
 	public static void classesToBeMilled(ModFileScanData scan) {
 		scan.getClasses().forEach(classData -> TO_BE_MILLED.add(classData.clazz()));
 	}
 	
+	/// ModContainerExt ///
+	
 	private static final Map<String, ModContainerExt> EXT_BY_OLD_MODID = new ConcurrentHashMap<>();
 	private static final Map<String, ModContainerExt> EXT_BY_NEW_MODID = new ConcurrentHashMap<>();
 	
-	//TODO expose these
+	//TODO expose these if they are useful
 	private static final Map<IModInfo, ModContainerExt> EXT_BY_MODINFO = new ConcurrentHashMap<>();
 	private static final Map<ModContainer, ModContainerExt> EXT_BY_MODCONTAINER = new ConcurrentHashMap<>();
 	

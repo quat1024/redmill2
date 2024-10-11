@@ -15,6 +15,7 @@ public class ModContainerExt {
 	public final String modernModid;
 	public final String javaModuleName;
 	
+	//see Globals for where these are set
 	public IModInfo modernModInfo;
 	public ModContainer modernModContainer;
 }

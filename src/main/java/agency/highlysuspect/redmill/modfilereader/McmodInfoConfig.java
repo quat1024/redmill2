@@ -1,6 +1,6 @@
 package agency.highlysuspect.redmill.modfilereader;
 
-import agency.highlysuspect.redmill.CheekyGlobalState;
+import agency.highlysuspect.redmill.Globals;
 import agency.highlysuspect.redmill.Consts;
 import agency.highlysuspect.redmill.ModContainerExt;
 import com.google.gson.Gson;
@@ -53,7 +53,7 @@ public class McmodInfoConfig implements IConfigurable {
 					
 					//if it has a parent, dep on that
 					if(entry.parent != null && !entry.parent.isEmpty()) {
-						ModContainerExt parentExt = CheekyGlobalState.getModContainerByOldId(entry.parent);
+						ModContainerExt parentExt = Globals.getModContainerByOldId(entry.parent);
 						if(parentExt == null) {
 							Consts.LOG.warn("Couldn't find ModContainerExt for old mod {}", entry.parent);
 						} else {
