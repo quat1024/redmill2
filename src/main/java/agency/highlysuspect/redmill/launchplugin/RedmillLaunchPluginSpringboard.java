@@ -57,6 +57,7 @@ public class RedmillLaunchPluginSpringboard implements ITransformationService {
 			LaunchPluginHandler lph = (LaunchPluginHandler) lphField.get(Launcher.INSTANCE);
 			Field pluginsField = LaunchPluginHandler.class.getDeclaredField("plugins");
 			pluginsField.setAccessible(true);
+			@SuppressWarnings("unchecked")
 			Map<String, ILaunchPluginService> plugins = (Map<String, ILaunchPluginService>) pluginsField.get(lph);
 			
 			//add my plugin launch service

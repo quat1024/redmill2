@@ -4,6 +4,7 @@ import agency.highlysuspect.redmill.Globals;
 import agency.highlysuspect.redmill.Consts;
 import agency.highlysuspect.redmill.ModContainerExt;
 import agency.highlysuspect.redmill.jarmetadata.RedmillJarMetadata;
+import agency.highlysuspect.redmill.util.StringInterner;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import cpw.mods.jarhandling.JarContents;
@@ -59,23 +60,22 @@ public class McmodInfoModFileReader implements IModFileReader {
 				String moduleId = firstMod.getModernModid();
 				String moduleVersion = firstMod.getModernVersion();
 				
+				//TODO: hoist this maybe? not sure where to put it lol
+				StringInterner mem = new StringInterner();
+				RedmillJarMetadata rmMeta = new RedmillJarMetadata(jar.getPrimaryPath(), mem);
+				
 				//TODO: find a better spot for this?
 				for(McmodInfoEntryConfig e : mcmodInfoConfig.entries) {
-					Globals.addModContainerExt(new ModContainerExt(e, moduleId));
+					//TODO: RedmillJarMetadata belongs to the jar, not the mod container
+					// should really define some sort of ModFileExt. this will do for now
+					Globals.addModContainerExt(new ModContainerExt(e, moduleId, rmMeta));
 				}
 				
-				//TODO: debug
-				RedmillJarMetadata rmMeta = new RedmillJarMetadata(jar.getPrimaryPath());
-				rmMeta.resolveAllTrueOwners();
+				//TODO: debug dumpin
 				Path dir = Paths.get(".").resolve("redmill-dump");
+				Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
 				Files.createDirectories(dir);
-				Gson gson = new GsonBuilder().disableHtmlEscaping().create();
 				Files.writeString(dir.resolve(moduleId + ".json"), gson.toJson(rmMeta.toJson()));
-				
-//				Path clientJar = dir.resolve("client.jar");
-//				RedmillJarMetadata clientMeta = new RedmillJarMetadata(clientJar);
-//				clientMeta.resolveAllTrueOwners();
-//				Files.writeString(dir.resolve("minecraft-1.4.7-hier.json"), gson.toJson(clientMeta.toJson()));
 				
 				//create securejar
 				JarMetadata jarMeta = new SimpleJarMetadata(moduleId, moduleVersion, jar::getPackages, jar.getMetaInfServices());

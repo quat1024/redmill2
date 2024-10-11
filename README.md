@@ -1,6 +1,10 @@
 # Red Mill
 
-redmill 1 never came out, this is a full rewrite
+redmill 1 is private and never came out, this is a full rewrite
+
+## credits
+
+`agency.highlysuspect.redmill.mcp.*` contains code from Voldeloom, which is licensed under a different license but I wrote all the classes I used from that project by myself, so i hold the copyright
 
 ## todo
 
@@ -9,7 +13,7 @@ redmill 1 never came out, this is a full rewrite
 
 ## notes
 
-jar metadata "pre" contains just strings.suitable for reading from a classfile or from a json file.
+jar metadata "pre" contains just strings. suitable for reading from a classfile or from a json file.
 
 the non-pre versions are actually linked up to each other. this makes it much easier to, say, climb up a class hierarchy while resolving trueowners.
 

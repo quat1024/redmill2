@@ -3,6 +3,8 @@ package agency.highlysuspect.redmill.transformer;
 import agency.highlysuspect.redmill.Globals;
 import org.objectweb.asm.tree.ClassNode;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.function.Consumer;
 
 public interface ClassProcessor extends Consumer<ClassNode> {
@@ -16,5 +18,18 @@ public interface ClassProcessor extends Consumer<ClassNode> {
 				}
 			}
 		};
+	}
+	
+	static void assignClassNode(ClassNode target, ClassNode source) {
+		for(Field field : ClassNode.class.getDeclaredFields()) {
+			if(Modifier.isStatic(field.getModifiers()) || Modifier.isFinal(field.getModifiers())) continue;
+			
+			try {
+				field.setAccessible(true);
+				field.set(target, field.get(source));
+			} catch (IllegalAccessException e) {
+				throw new RuntimeException(e);
+			}
+		}
 	}
 }

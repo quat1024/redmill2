@@ -4,9 +4,6 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.ClassNode;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-
 public interface ByteLevelClassProcessor extends ClassProcessor {
 	byte[] accept(ClassNode classNode, byte[] bytes);
 	
@@ -25,19 +22,6 @@ public interface ByteLevelClassProcessor extends ClassProcessor {
 		ClassReader reader = new ClassReader(newBytes);
 		reader.accept(newNode, 0);
 		
-		assignClassNode(classNode, newNode);
-	}
-	
-	static void assignClassNode(ClassNode target, ClassNode source) {
-		for(Field field : ClassNode.class.getDeclaredFields()) {
-			if(Modifier.isStatic(field.getModifiers()) || Modifier.isFinal(field.getModifiers())) continue;
-			
-			try {
-				field.setAccessible(true);
-				field.set(target, field.get(source));
-			} catch (IllegalAccessException e) {
-				throw new RuntimeException(e);
-			}
-		}
+		ClassProcessor.assignClassNode(classNode, newNode);
 	}
 }

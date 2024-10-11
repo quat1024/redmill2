@@ -29,7 +29,7 @@ public class RedmillModContainer extends ModContainer {
 		Globals.associateWithModContainer(ext, this);
 		
 		//tell RedmillLaunchPluginService about the classes in this jar
-		Globals.classesToBeMilled(modFileScanData);
+		Globals.classesToBeMilled(modFileScanData, ext);
 		
 		//find the old modid, and find the java module the mod lives inside
 		String oldModid = ext.oldModid;
