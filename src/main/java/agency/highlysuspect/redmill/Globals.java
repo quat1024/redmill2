@@ -1,5 +1,6 @@
 package agency.highlysuspect.redmill;
 
+import agency.highlysuspect.redmill.jarmetadata.RedmillJarMetadata;
 import agency.highlysuspect.redmill.languageloader.RedmillModContainer;
 import com.google.common.collect.Sets;
 import net.neoforged.fml.ModContainer;
@@ -7,6 +8,7 @@ import net.neoforged.neoforgespi.language.IModInfo;
 import net.neoforged.neoforgespi.language.ModFileScanData;
 import org.objectweb.asm.Type;
 
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Set;
@@ -24,6 +26,18 @@ public class Globals {
 		} catch (Exception e) {
 			Consts.LOG.error("Failed to load redmill config. Using defaults", e);
 			CFG = new RedmillConfig();
+		}
+	}
+	
+	/// hierarchy ///
+	
+	public static RedmillJarMetadata minecraft147Meta;
+	
+	static {
+		try(InputStream in = Globals.class.getResourceAsStream("redmill-stuff/minecraft-1.4.7-hier.json")) {
+			minecraft147Meta = new RedmillJarMetadata(in);
+		} catch (Exception e) {
+			throw mkRethrow(e, "Failed to load minecraft 1.4.7 metadata");
 		}
 	}
 	
@@ -72,6 +86,9 @@ public class Globals {
 	//Forge screen usually doesn't display the full throwable message, this is an attempt to
 	//show more of the error to the user
 	public static RuntimeException mkRethrow(Throwable parent, String messagePrefix) {
-		return new RuntimeException(messagePrefix + ": " + parent.getMessage(), parent);
+		RuntimeException e = new RuntimeException(messagePrefix + ": " + parent.getMessage(), parent);
+		//forge loves to swallow errors and only actually crash weeks later, so log it now
+		Consts.LOG.error(e);
+		return e;
 	}
 }

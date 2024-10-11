@@ -3,6 +3,9 @@ package agency.highlysuspect.redmill.modfilereader;
 import agency.highlysuspect.redmill.Globals;
 import agency.highlysuspect.redmill.Consts;
 import agency.highlysuspect.redmill.ModContainerExt;
+import agency.highlysuspect.redmill.jarmetadata.RedmillJarMetadata;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import cpw.mods.jarhandling.JarContents;
 import cpw.mods.jarhandling.JarMetadata;
 import cpw.mods.jarhandling.SecureJar;
@@ -16,6 +19,9 @@ import org.apache.commons.lang3.mutable.MutableObject;
 import org.jetbrains.annotations.Nullable;
 
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 import java.util.jar.Attributes;
@@ -57,6 +63,19 @@ public class McmodInfoModFileReader implements IModFileReader {
 				for(McmodInfoEntryConfig e : mcmodInfoConfig.entries) {
 					Globals.addModContainerExt(new ModContainerExt(e, moduleId));
 				}
+				
+				//TODO: debug
+				RedmillJarMetadata rmMeta = new RedmillJarMetadata(jar.getPrimaryPath());
+				rmMeta.resolveAllTrueOwners();
+				Path dir = Paths.get(".").resolve("redmill-dump");
+				Files.createDirectories(dir);
+				Gson gson = new GsonBuilder().disableHtmlEscaping().create();
+				Files.writeString(dir.resolve(moduleId + ".json"), gson.toJson(rmMeta.toJson()));
+				
+//				Path clientJar = dir.resolve("client.jar");
+//				RedmillJarMetadata clientMeta = new RedmillJarMetadata(clientJar);
+//				clientMeta.resolveAllTrueOwners();
+//				Files.writeString(dir.resolve("minecraft-1.4.7-hier.json"), gson.toJson(clientMeta.toJson()));
 				
 				//create securejar
 				JarMetadata jarMeta = new SimpleJarMetadata(moduleId, moduleVersion, jar::getPackages, jar.getMetaInfServices());
