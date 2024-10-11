@@ -1,27 +1,26 @@
 package agency.highlysuspect.redmill.modfilereader;
 
-import agency.highlysuspect.redmill.Consts;
+import agency.highlysuspect.redmill.CheekyGlobalState;
 import net.neoforged.neoforgespi.language.IConfigurable;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
 //Meant to be deserialized with google gson
-public class McmodInfoEntry implements IConfigurable {
-	String modid;
-	String name;
-	String description;
-	String version;
-	String credits;
-	String mcversion;
-	String url;
-	String updateUrl;
-	List<String> authors;
-	String parent;
-	List<String> screenshots;
-	List<String> dependencies;
+public class McmodInfoEntryConfig implements IConfigurable {
+	public String modid;
+	public String name;
+	public String description;
+	public String version;
+	public String credits;
+	public String mcversion;
+	public String url;
+	public String updateUrl;
+	public List<String> authors;
+	public String parent;
+	public List<String> screenshots;
+	public List<String> dependencies;
 	
 	private transient String modernModid;
 	private transient String modernVersion;
@@ -36,6 +35,8 @@ public class McmodInfoEntry implements IConfigurable {
 			if(modernModid == null || modernModid.isEmpty()) {
 				modernModid = "unnamed";
 			}
+			
+			modernModid = CheekyGlobalState.CFG.modidPrefix + modernModid;
 			
 			//lowercase only
 			modernModid = modernModid
@@ -82,45 +83,22 @@ public class McmodInfoEntry implements IConfigurable {
 		return switch(key[0]) {
 			case "modId" -> Optional.of((T) getModernModid());
 			case "version" -> Optional.of((T) getModernVersion());
+			//skipping mcVersion and updateUrl, for hopefully obvious reasons
 			case "displayName" -> Optional.of((T) name);
 			case "description" -> Optional.of((T) description);
 			case "modUrl" -> Optional.of((T) url);
 			//modproperties
+			
+			//from ModListScreen:
+			case "authors" -> Optional.of((T) String.join(", ", authors));
+			case "credits" -> Optional.of((T) credits);
+			
 			default -> Optional.empty();
 		};
 	}
 	
 	@Override
 	public List<? extends IConfigurable> getConfigList(String... key) {
-		if(key[0].equals("dependencies")) {
-			List<FakeDependency> deps = new ArrayList<>();
-			deps.add(new FakeDependency(Consts.REDMILL_MODID, "BEFORE"));
-			
-			//Old forge has this concept of parent/child mods.
-			//I don't think new forge has this, so convert "parent: xyz" into an AFTER dependency on xyz.
-			if(parent != null) deps.add(new FakeDependency(parent, "AFTER"));
-			
-			return deps;
-		}
-		
-		else return List.of();
-	}
-	
-	//see net.neoforged.fml.loading.moddiscovery.ModInfo.ModVersion.ModVersion
-	private record FakeDependency(String dependsOn, String ordering) implements IConfigurable {
-		@Override
-		public <T> Optional<T> getConfigElement(String... key) {
-			return switch(key[0]) {
-				case "modid" -> Optional.of((T) dependsOn);
-				case "type" -> Optional.of((T) "required");
-				case "ordering" -> Optional.of((T) ordering);
-				default -> Optional.empty();
-			};
-		}
-		
-		@Override
-		public List<? extends IConfigurable> getConfigList(String... key) {
-			return List.of();
-		}
+		return List.of();
 	}
 }

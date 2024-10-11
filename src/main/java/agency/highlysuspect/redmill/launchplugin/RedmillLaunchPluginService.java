@@ -19,15 +19,15 @@ public class RedmillLaunchPluginService implements ILaunchPluginService {
 	
 	@Override
 	public EnumSet<Phase> handlesClass(Type classType, boolean isEmpty) {
-		return CheekyGlobalState.PREMILLED_CLASSES.contains(classType) ? BEFORE : NOPE;
+		return CheekyGlobalState.TO_BE_MILLED.contains(classType) ? BEFORE : NOPE;
 	}
 	
 	@Override
 	public boolean processClass(Phase phase, ClassNode classNode, Type classType, String reason) {
 		if(phase != Phase.BEFORE) return false;
 		
-		System.out.println("Got class: " + classType.getInternalName() + " reason: " + reason);
-		System.out.println("The game will now probably crash");
+		Consts.LOG.info("Got class: {} reason: {}", classType.getInternalName(), reason);
+		Consts.LOG.warn("The game will now probably crash");
 		
 		return true;
 	}

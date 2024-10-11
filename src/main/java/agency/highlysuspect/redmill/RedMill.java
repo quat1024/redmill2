@@ -7,6 +7,6 @@ import net.neoforged.fml.common.Mod;
 public class RedMill {
 	public RedMill(IEventBus modBus) {
 		//TODO I don't think this is getting called
-		System.out.println("hello world ~");
+		Consts.LOG.info("hello world ~");
 	}
 }
