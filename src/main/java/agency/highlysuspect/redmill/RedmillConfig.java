@@ -1,4 +1,4 @@
-package agency.highlysuspect.redmill.conf;
+package agency.highlysuspect.redmill;
 
 import java.nio.file.Files;
 import java.nio.file.Path;

@@ -24,7 +24,7 @@ import java.util.Set;
  * Use this to get the foot in the door.
  *
  * Transformation services aren't appropriate for us because they require specifying the complete set of classes
- * to patch up-front.
+ * to transform up-front. I want to transform *every* class from *every* redmill mod.
  */
 public class RedmillLaunchPluginSpringboard implements ITransformationService {
 	@Override

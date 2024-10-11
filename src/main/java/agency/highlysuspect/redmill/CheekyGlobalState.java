@@ -1,6 +1,5 @@
 package agency.highlysuspect.redmill;
 
-import agency.highlysuspect.redmill.conf.RedmillConfig;
 import agency.highlysuspect.redmill.languageloader.RedmillModContainer;
 import com.google.common.collect.Sets;
 import net.neoforged.fml.ModContainer;
