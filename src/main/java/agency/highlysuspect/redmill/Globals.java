@@ -66,4 +66,12 @@ public class Globals {
 	public static ModContainerExt getModContainerByNewId(String newId) {
 		return EXT_BY_NEW_MODID.get(newId);
 	}
+	
+	/// util ///
+	
+	//Forge screen usually doesn't display the full throwable message, this is an attempt to
+	//show more of the error to the user
+	public static RuntimeException mkRethrow(Throwable parent, String messagePrefix) {
+		return new RuntimeException(messagePrefix + ": " + parent.getMessage(), parent);
+	}
 }

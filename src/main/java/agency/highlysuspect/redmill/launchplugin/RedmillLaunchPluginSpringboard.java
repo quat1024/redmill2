@@ -34,34 +34,42 @@ public class RedmillLaunchPluginSpringboard implements ITransformationService {
 	
 	@Override
 	public void onLoad(IEnvironment env, Set<String> otherServices) throws IncompatibleEnvironmentException {
-		Consts.LOG.warn("Hold on to your butts I'm about to do something really irresponsible");
-		
-		try {
-			Field lphField = Launcher.class.getDeclaredField("launchPlugins");
-			lphField.setAccessible(true);
-			LaunchPluginHandler lph = (LaunchPluginHandler) lphField.get(Launcher.INSTANCE);
-			
-			Field pluginsField = LaunchPluginHandler.class.getDeclaredField("plugins");
-			pluginsField.setAccessible(true);
-			Map<String, ILaunchPluginService> plugins = (Map<String, ILaunchPluginService>) pluginsField.get(lph);
-			
-			Map<String, ILaunchPluginService> newPlugins = new LinkedHashMap<>(plugins);
-			newPlugins.put(Consts.REDMILL_LAUNCH_PLUGIN_SERVICE, new RedmillLaunchPluginService());
-			
-			pluginsField.set(lph, newPlugins);
-			
-			Consts.LOG.info("Successfully performed the ol reddit switcheroo");
-		} catch (Exception e) {
-			throw new RuntimeException("Uh oh that's not good", e);
-		}
+		//This gets called a bit before initialize(), but the IEnvironment is more populated in initialize()
 	}
 	
 	@Override
 	public void initialize(IEnvironment environment) {
+		Consts.LOG.info("RedmillLaunchPluginSpringboard#initialize. Finding gamedir");
+		
 		Path gameDir = environment.getProperty(IEnvironment.Keys.GAMEDIR.get())
 			.orElseThrow(() -> new IllegalStateException("No gamedir?"));
 		
+		Consts.LOG.info("Loading config");
 		Globals.loadConfig(gameDir);
+		
+		Consts.LOG.warn("Hold on to your butts, I'm about to do something really irresponsible");
+		RedmillLaunchPluginService rlps = new RedmillLaunchPluginService();
+		
+		try {
+			//grab the launch plugins map
+			Field lphField = Launcher.class.getDeclaredField("launchPlugins");
+			lphField.setAccessible(true);
+			LaunchPluginHandler lph = (LaunchPluginHandler) lphField.get(Launcher.INSTANCE);
+			Field pluginsField = LaunchPluginHandler.class.getDeclaredField("plugins");
+			pluginsField.setAccessible(true);
+			Map<String, ILaunchPluginService> plugins = (Map<String, ILaunchPluginService>) pluginsField.get(lph);
+			
+			//add my plugin launch service
+			Map<String, ILaunchPluginService> newPlugins = new LinkedHashMap<>(plugins);
+			newPlugins.put(rlps.name(), rlps);
+			
+			//write it back
+			pluginsField.set(lph, newPlugins);
+		} catch (Exception e) {
+			throw new RuntimeException("Red Mill failed to do hacky stuff: " + e.getMessage(), e);
+		}
+		
+		Consts.LOG.info("Somehow didn't crash doing that. I'm kinda surprised. Anyway...");
 	}
 	
 	@Override

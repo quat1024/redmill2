@@ -3,6 +3,7 @@ package agency.highlysuspect.redmill.modfilereader;
 import agency.highlysuspect.redmill.Globals;
 import net.neoforged.neoforgespi.language.IConfigurable;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -14,13 +15,13 @@ public class McmodInfoEntryConfig implements IConfigurable {
 	public String description;
 	public String version;
 	public String credits;
-	public String mcversion;
+	//public String mcversion;
 	public String url;
-	public String updateUrl;
-	public List<String> authors;
+	//public String updateUrl;
+	public List<String> authors = new ArrayList<>();
 	public String parent;
-	public List<String> screenshots;
-	public List<String> dependencies;
+	//public List<String> screenshots = new ArrayList<>();
+	//public List<String> dependencies = new ArrayList<>(); //TODO: this is ignored
 	
 	private transient String modernModid;
 	private transient String modernVersion;
@@ -59,7 +60,7 @@ public class McmodInfoEntryConfig implements IConfigurable {
 	
 	public String getModernVersion() {
 		if(modernVersion == null) {
-			//see ModInfo.VALID_VERSION
+			//see ModInfo.VALID_VERSION.
 			
 			modernVersion = version;
 			
@@ -78,20 +79,21 @@ public class McmodInfoEntryConfig implements IConfigurable {
 	}
 	
 	//see net.neoforged.fml.loading.moddiscovery.ModInfo.ModInfo
+	@SuppressWarnings("unchecked")
 	@Override
 	public <T> Optional<T> getConfigElement(String... key) {
 		return switch(key[0]) {
 			case "modId" -> Optional.of((T) getModernModid());
 			case "version" -> Optional.of((T) getModernVersion());
 			//skipping mcVersion and updateUrl, for hopefully obvious reasons
-			case "displayName" -> Optional.of((T) name);
-			case "description" -> Optional.of((T) description);
-			case "modUrl" -> Optional.of((T) url);
+			case "displayName" -> Optional.ofNullable((T) name);
+			case "description" -> Optional.ofNullable((T) description);
+			case "modUrl" -> Optional.ofNullable((T) url);
 			//modproperties
 			
 			//from ModListScreen:
 			case "authors" -> Optional.of((T) String.join(", ", authors));
-			case "credits" -> Optional.of((T) credits);
+			case "credits" -> Optional.ofNullable((T) credits);
 			
 			default -> Optional.empty();
 		};

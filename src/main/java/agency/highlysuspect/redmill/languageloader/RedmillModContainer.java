@@ -22,7 +22,7 @@ public class RedmillModContainer extends ModContainer {
 		//get the ModContainerExt, which better exist
 		ModContainerExt ext = Globals.getModContainerByNewId(info.getModId());
 		if(ext == null) {
-			throw new IllegalStateException("No ModContainerExt for new modid " + info.getModId());
+			throw new IllegalStateException("No ModContainerExt for modern modid " + info.getModId());
 		}
 		
 		Globals.associateWithModInfo(ext, info);
@@ -61,7 +61,7 @@ public class RedmillModContainer extends ModContainer {
 			try {
 				modClass = Objects.requireNonNull(Class.forName(module, entrypoint));
 			} catch (Exception e) {
-				throw new RuntimeException("Failed to load redmill entrypoint class " + entrypoint, e);
+				throw Globals.mkRethrow(e, "Failed to load redmill entrypoint class " + entrypoint);
 			}
 		}
 	}
@@ -82,7 +82,7 @@ public class RedmillModContainer extends ModContainer {
 		try {
 			modClass.getConstructor().newInstance();
 		} catch (Exception e) {
-			throw new RuntimeException("Failed to construct redmill entrypoint " + modClass, e);
+			throw Globals.mkRethrow(e, "Failed to construct redmill entrypoint " + modClass);
 		}
 	}
 }

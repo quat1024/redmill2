@@ -2,6 +2,7 @@ package agency.highlysuspect.redmill.launchplugin;
 
 import agency.highlysuspect.redmill.Globals;
 import agency.highlysuspect.redmill.Consts;
+import agency.highlysuspect.redmill.transformer.ClassProcessor;
 import cpw.mods.modlauncher.serviceapi.ILaunchPluginService;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.ClassNode;
@@ -9,6 +10,10 @@ import org.objectweb.asm.tree.ClassNode;
 import java.util.EnumSet;
 
 public class RedmillLaunchPluginService implements ILaunchPluginService {
+	public RedmillLaunchPluginService() {
+		this.processor = ClassProcessor.composite();
+	}
+	
 	@Override
 	public String name() {
 		return Consts.REDMILL_LAUNCH_PLUGIN_SERVICE;
@@ -16,6 +21,8 @@ public class RedmillLaunchPluginService implements ILaunchPluginService {
 	
 	private static final EnumSet<Phase> NOPE = EnumSet.noneOf(Phase.class);
 	private static final EnumSet<Phase> BEFORE = EnumSet.of(Phase.BEFORE);
+	
+	private final ClassProcessor processor;
 	
 	@Override
 	public EnumSet<Phase> handlesClass(Type classType, boolean isEmpty) {
@@ -27,7 +34,8 @@ public class RedmillLaunchPluginService implements ILaunchPluginService {
 		if(phase != Phase.BEFORE) return false;
 		
 		Consts.LOG.info("Got class: {} reason: {}", classType.getInternalName(), reason);
-		Consts.LOG.warn("The game will now probably crash");
+		
+		processor.accept(classNode);
 		
 		return true;
 	}

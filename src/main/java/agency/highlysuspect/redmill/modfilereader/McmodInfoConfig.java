@@ -16,9 +16,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
+@SuppressWarnings("UnstableApiUsage")
 public class McmodInfoConfig implements IConfigurable {
 	@SuppressWarnings("Convert2Diamond")
-	public McmodInfoConfig(InputStream in) throws Exception {
+	public McmodInfoConfig(InputStream in) {
 		entries = new Gson().fromJson(new InputStreamReader(in), new TypeToken<List<McmodInfoEntryConfig>>(){});
 	}
 	
@@ -27,6 +28,7 @@ public class McmodInfoConfig implements IConfigurable {
 	/**
 	 * @see net.neoforged.fml.loading.moddiscovery.ModFileInfo#ModFileInfo(ModFile, IConfigurable, Consumer)
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public <T> Optional<T> getConfigElement(String... key) {
 		return switch(key[0]) {
@@ -72,6 +74,7 @@ public class McmodInfoConfig implements IConfigurable {
 	
 	//see net.neoforged.fml.loading.moddiscovery.ModInfo.ModVersion.ModVersion
 	private record DepEntry(String dependsOn, String ordering) implements IConfigurable {
+		@SuppressWarnings("unchecked")
 		@Override
 		public <T> Optional<T> getConfigElement(String... key) {
 			return switch(key[0]) {

@@ -21,6 +21,7 @@ import java.util.Optional;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
+@SuppressWarnings("UnstableApiUsage")
 public class McmodInfoModFileReader implements IModFileReader {
 	@Override
 	public @Nullable IModFile read(JarContents jar, ModFileDiscoveryAttributes attributes) {
@@ -69,7 +70,7 @@ public class McmodInfoModFileReader implements IModFileReader {
 				
 				return modFile;
 			} catch (Exception e) {
-				throw new RuntimeException("Couldn't initialize mcmod.info jar " + jar.getPrimaryPath(), e);
+				throw Globals.mkRethrow(e, "Couldn't initialize mcmod.info jar " + jar.getPrimaryPath());
 			}
 		}
 		
