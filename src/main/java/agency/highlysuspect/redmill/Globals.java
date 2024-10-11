@@ -1,21 +1,17 @@
 package agency.highlysuspect.redmill;
 
 import agency.highlysuspect.redmill.jarmetadata.RedmillJarMetadata;
-import agency.highlysuspect.redmill.languageloader.RedmillModContainer;
 import agency.highlysuspect.redmill.mcp.Members;
 import agency.highlysuspect.redmill.mcp.Srg;
 import agency.highlysuspect.redmill.util.StringInterner;
-import com.google.common.collect.Sets;
-import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.loading.progress.StartupNotificationManager;
 import net.neoforged.neoforgespi.language.IModInfo;
-import net.neoforged.neoforgespi.language.ModFileScanData;
-import org.objectweb.asm.Type;
+import net.neoforged.neoforgespi.locating.IModFile;
 
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Globals {
@@ -47,13 +43,16 @@ public class Globals {
 			InputStream methodsIn = Globals.class.getResourceAsStream("/redmill-stuff/minecraft-1.4.7-methods.csv");
 			InputStream joinedIn = Globals.class.getResourceAsStream("/redmill-stuff/minecraft-1.4.7-joined.srg");
 		) {
+			StartupNotificationManager.addModMessage("(Red Mill) Loading metadata");
 			minecraft147Meta = new RedmillJarMetadata(hierIn, mem);
 			
+			StartupNotificationManager.addModMessage("(Red Mill) Loading MCP data");
 			Members fields = new Members().read(fieldsIn, mem);
 			Members methods = new Members().read(methodsIn, mem);
 			Srg srg = new Srg().read(joinedIn, mem);
 			minecraft147Srg = srg.named(fields, methods);
 			
+			//TODO: dump
 			minecraft147Srg.writeTo(Paths.get(".").resolve("redmill-dump").resolve("joined-named.srg"));
 			
 		} catch (Exception e) {
@@ -61,26 +60,25 @@ public class Globals {
 		}
 	}
 	
-	/// class list ///
+	/// ModFileExt ///
 	
-	public static final Set<Type> TO_BE_MILLED = Sets.newConcurrentHashSet();
+	private static final Map<IModFile, ModFileExt> MOD_FILE_EXT = new ConcurrentHashMap<>();
 	
-	public static void classesToBeMilled(ModFileScanData scan, ModContainerExt ext) {
-		scan.getClasses().forEach(classData -> {
-			TO_BE_MILLED.add(classData.clazz());
-			EXT_BY_CLASS_INTERNAL_NAME.put(classData.clazz().getInternalName(), ext);
-		});
+	public static void addModFileExt(ModFileExt ext) {
+		MOD_FILE_EXT.put(ext.modernModFile, ext);
+	}
+	
+	public static ModFileExt getModFileExt(IModFile file) {
+		return MOD_FILE_EXT.get(file);
 	}
 	
 	/// ModContainerExt ///
 	
 	private static final Map<String, ModContainerExt> EXT_BY_OLD_MODID = new ConcurrentHashMap<>();
 	private static final Map<String, ModContainerExt> EXT_BY_NEW_MODID = new ConcurrentHashMap<>();
-	private static final Map<String, ModContainerExt> EXT_BY_CLASS_INTERNAL_NAME = new ConcurrentHashMap<>();
 	
 	//TODO expose these if they are useful
 	private static final Map<IModInfo, ModContainerExt> EXT_BY_MODINFO = new ConcurrentHashMap<>();
-	private static final Map<ModContainer, ModContainerExt> EXT_BY_MODCONTAINER = new ConcurrentHashMap<>();
 	
 	public static void addModContainerExt(ModContainerExt e) {
 		EXT_BY_OLD_MODID.put(e.oldModid, e);
@@ -92,25 +90,12 @@ public class Globals {
 		ext.modernModInfo = info;
 	}
 	
-	public static void associateWithModContainer(ModContainerExt ext, RedmillModContainer mc) {
-		EXT_BY_MODCONTAINER.put(mc, ext);
-		ext.modernModContainer = mc;
-	}
-	
 	public static ModContainerExt getModContainerByOldId(String oldId) {
 		return EXT_BY_OLD_MODID.get(oldId);
 	}
 	
 	public static ModContainerExt getModContainerByNewId(String newId) {
 		return EXT_BY_NEW_MODID.get(newId);
-	}
-	
-	/**
-	 * TODO: classnames should be associated with modfileinfos or something, not modcontainers
-	 */
-	@Deprecated
-	public static ModContainerExt getModContainerByClassInternalName(String internalName) {
-		return EXT_BY_CLASS_INTERNAL_NAME.get(internalName);
 	}
 	
 	/// util ///

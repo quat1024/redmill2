@@ -3,6 +3,7 @@ package agency.highlysuspect.redmill.modfilereader;
 import agency.highlysuspect.redmill.Globals;
 import agency.highlysuspect.redmill.Consts;
 import agency.highlysuspect.redmill.ModContainerExt;
+import agency.highlysuspect.redmill.ModFileExt;
 import agency.highlysuspect.redmill.jarmetadata.RedmillJarMetadata;
 import agency.highlysuspect.redmill.util.StringInterner;
 import com.google.gson.Gson;
@@ -64,11 +65,10 @@ public class McmodInfoModFileReader implements IModFileReader {
 				StringInterner mem = new StringInterner();
 				RedmillJarMetadata rmMeta = new RedmillJarMetadata(jar.getPrimaryPath(), mem);
 				
-				//TODO: find a better spot for this?
+				//this has to be globally exposed early, since the IModFile stuff sometimes resolves modids
+				//TODO seems bad for like, addons and stuff
 				for(McmodInfoEntryConfig e : mcmodInfoConfig.entries) {
-					//TODO: RedmillJarMetadata belongs to the jar, not the mod container
-					// should really define some sort of ModFileExt. this will do for now
-					Globals.addModContainerExt(new ModContainerExt(e, moduleId, rmMeta));
+					Globals.addModContainerExt(new ModContainerExt(e));
 				}
 				
 				//TODO: debug dumpin
@@ -86,6 +86,10 @@ public class McmodInfoModFileReader implements IModFileReader {
 				ModFile modFile = (ModFile) IModFile.create(sj, (__) -> bleh.getValue());
 				ModFileInfo modFileInfo = new ModFileInfo(modFile, mcmodInfoConfig, __ -> {}, List.of());
 				bleh.setValue(modFileInfo);
+				
+				//create a ModFileExt that exposes some of the information gleaned just now
+				Globals.addModFileExt(new ModFileExt(modFile, moduleId, rmMeta));
+				//TODO: can I call Globals.associateWithModInfo? I don't rly have the modinfos
 				
 				return modFile;
 			} catch (Exception e) {

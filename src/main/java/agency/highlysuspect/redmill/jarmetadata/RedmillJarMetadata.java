@@ -16,6 +16,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -85,5 +86,9 @@ public class RedmillJarMetadata {
 		RedmillJarMetadata result = new RedmillJarMetadata();
 		for(RedmillJarMetadata other : others) result.classMeta.putAll(other.classMeta);
 		return result;
+	}
+	
+	public static RedmillJarMetadata composite(Stream<RedmillJarMetadata> others) {
+		return composite(others.toArray(RedmillJarMetadata[]::new));
 	}
 }

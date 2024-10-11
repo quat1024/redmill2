@@ -3,6 +3,7 @@ package agency.highlysuspect.redmill.languageloader;
 import agency.highlysuspect.redmill.Globals;
 import agency.highlysuspect.redmill.Consts;
 import agency.highlysuspect.redmill.ModContainerExt;
+import agency.highlysuspect.redmill.ModFileExt;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.neoforgespi.language.IModInfo;
@@ -19,24 +20,48 @@ public class RedmillModContainer extends ModContainer {
 	public RedmillModContainer(IModInfo info, ModFileScanData modFileScanData, ModuleLayer gameLayer) {
 		super(info);
 		
-		//get the ModContainerExt, which better exist
-		ModContainerExt ext = Globals.getModContainerByNewId(info.getModId());
-		if(ext == null) {
+		//// file specific ////
+		
+		this.modFileScanData = modFileScanData;
+		
+		//get the ModFileExt
+		this.modFileExt = Globals.getModFileExt(info.getOwningFile().getFile());
+		if(modFileExt == null)
+			throw new IllegalStateException("No ModFileExt for " + info.getOwningFile().getFile());
+		
+		//find the java module this mod lives inside
+		this.module = gameLayer.findModule(modFileExt.javaModuleName)
+			.orElseThrow(() -> new RuntimeException("Couldn't find a module named " + modFileExt.javaModuleName));
+		
+		//// mod specific ////
+		
+		//get the ModContainerExt
+		this.modContainerExt = Globals.getModContainerByNewId(info.getModId());
+		if(modContainerExt == null)
 			throw new IllegalStateException("No ModContainerExt for modern modid " + info.getModId());
-		}
 		
-		Globals.associateWithModInfo(ext, info);
-		Globals.associateWithModContainer(ext, this);
-		
-		//tell RedmillLaunchPluginService about the classes in this jar
-		Globals.classesToBeMilled(modFileScanData, ext);
-		
-		//find the old modid, and find the java module the mod lives inside
-		String oldModid = ext.oldModid;
-		Module module = gameLayer.findModule(ext.javaModuleName)
-			.orElseThrow(() -> new RuntimeException("Couldn't find a module named " + ext.javaModuleName));
-		
-		//find the applicable entrypoint (@Mod annotation with the correct modid)
+		//associate the ModContainerExt with the ModInfo - TODO: do this earlier
+		Globals.associateWithModInfo(modContainerExt, info);
+	}
+	
+	public final ModFileExt modFileExt;
+	public final ModContainerExt modContainerExt;
+	
+	private final Module module;
+	public ModFileScanData modFileScanData;
+	
+	@Nullable Class<?> modClass;
+	@Nullable Object modInstance;
+	
+	@Override
+	public @Nullable IEventBus getEventBus() {
+		return null;
+	}
+	
+	@Override
+	protected void constructMod() {
+		//find the @Mod annotation with the correct modid
+		String oldModid = modContainerExt.oldModid;
 		String entrypoint = null;
 		for(ModFileScanData.AnnotationData annotationData : modFileScanData.getAnnotations()) {
 			if(annotationData.annotationType().equals(CPW_MOD)) {
@@ -50,39 +75,24 @@ public class RedmillModContainer extends ModContainer {
 		}
 		
 		if(!Globals.CFG.initMods) {
-			Consts.LOG.warn("initMods disabled - not loading that entrypoint");
-			entrypoint = null;
+			Consts.LOG.warn("initMods disabled - not loading entrypoints for " + modContainerExt.oldModid);
+			return;
 		}
 		
-		//load, but do not yet construct, the mod entrypoint
-		if(entrypoint == null) modClass = null;
-		else {
+		if(entrypoint != null) {
 			Consts.LOG.debug("Loading entrypoint class {}", entrypoint);
 			try {
 				modClass = Objects.requireNonNull(Class.forName(module, entrypoint));
 			} catch (Exception e) {
 				throw Globals.mkRethrow(e, "Failed to load redmill entrypoint class " + entrypoint);
 			}
-		}
-	}
-	
-	private final @Nullable Class<?> modClass;
-	
-	@Override
-	public @Nullable IEventBus getEventBus() {
-		return null;
-	}
-	
-	@Override
-	protected void constructMod() {
-		if(modClass == null) return;
-		
-		Consts.LOG.debug("Constructing mod class {}", modClass);
-		
-		try {
-			modClass.getConstructor().newInstance();
-		} catch (Exception e) {
-			throw Globals.mkRethrow(e, "Failed to construct redmill entrypoint " + modClass);
+			
+			Consts.LOG.debug("Constructing mod class {}", modClass);
+			try {
+				modInstance = modClass.getConstructor().newInstance();
+			} catch (Exception e) {
+				throw Globals.mkRethrow(e, "Failed to construct redmill entrypoint " + modClass);
+			}
 		}
 	}
 }
