@@ -43,6 +43,13 @@ public class ClassHierarchyBenderProcessor implements ClassProcessor, Opcodes {
 		});
 	}
 	
+	private static String proxyDescriptorToClassName(String desc) {
+		return DescriptorMapper.map(desc, cls -> {
+			if(isMinecraftish(cls)) return proxyClassName(cls);
+			else return cls;
+		});
+	}
+	
 	@Override
 	public void accept(ClassNode node) {
 		node.signature = null; //for decompilers (TODO remap it)
@@ -62,12 +69,27 @@ public class ClassHierarchyBenderProcessor implements ClassProcessor, Opcodes {
 		for(FieldNode field : node.fields) {
 			field.desc = proxyDescriptorToInterfaceName(field.desc);
 			field.signature = null; //for decompilers (TODO remap it)
+			
+			//rewrite annotations
+			if(field.visibleAnnotations != null) for(AnnotationNode annotation : field.visibleAnnotations) {
+				annotation.desc = proxyDescriptorToClassName(annotation.desc);
+			}
+		}
+		
+		//rewrite annotations
+		if(node.visibleAnnotations != null) for(AnnotationNode annotation : node.visibleAnnotations) {
+			annotation.desc = proxyDescriptorToClassName(annotation.desc);
 		}
 		
 		//rewrite methods
 		for(MethodNode method : node.methods) {
 			//rewrite method arguments and return types
 			method.desc = proxyDescriptorToInterfaceName(method.desc);
+			
+			//rewrite annotations
+			if(method.visibleAnnotations != null) for(AnnotationNode annotation : method.visibleAnnotations) {
+				annotation.desc = proxyDescriptorToClassName(annotation.desc);
+			}
 			
 			//clear some decompiler gunk (TODO remap it)
 			if(method.localVariables != null)
