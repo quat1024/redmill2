@@ -2,10 +2,13 @@ package agency.highlysuspect.redmill.launchplugin;
 
 import agency.highlysuspect.redmill.Globals;
 import agency.highlysuspect.redmill.Consts;
+import agency.highlysuspect.redmill.ModContainerExt;
 import agency.highlysuspect.redmill.ModFileExt;
 import agency.highlysuspect.redmill.jarmetadata.RedmillJarMetadata;
 import agency.highlysuspect.redmill.languageloader.RedmillModContainer;
+import agency.highlysuspect.redmill.transformer.ClassHierarchyBenderProcessor;
 import agency.highlysuspect.redmill.transformer.ClassProcessor;
+import agency.highlysuspect.redmill.transformer.FieldsToGettersAndSettersProcessor;
 import agency.highlysuspect.redmill.transformer.McpRemappingClassProcessor;
 import cpw.mods.modlauncher.serviceapi.ILaunchPluginService;
 import net.neoforged.fml.loading.progress.ProgressMeter;
@@ -42,7 +45,11 @@ public class RedmillLaunchPluginService implements ILaunchPluginService {
 	private ClassProcessor processor;
 	private final Set<Type> toBeMilled = new HashSet<>();
 	
-	public void doneModLoading(Collection<RedmillModContainer> rmcs) {
+	public void doneModLoading(Collection<ModContainerExt> modContainerExts) {
+		List<RedmillModContainer> rmcs = modContainerExts.stream()
+			.map(mce -> mce.modernModContainer)
+			.toList();
+		
 		Set<ModFileExt> modFiles = rmcs.stream()
 			.map(rmc -> rmc.modFileExt)
 			.collect(Collectors.toSet());
@@ -65,7 +72,9 @@ public class RedmillLaunchPluginService implements ILaunchPluginService {
 		
 		//make our jar processor
 		processor = ClassProcessor.composite(
-			new McpRemappingClassProcessor(Globals.minecraft147Srg, compositeMetadata)
+			new McpRemappingClassProcessor(Globals.minecraft147Srg, compositeMetadata),
+			new FieldsToGettersAndSettersProcessor(),
+			new ClassHierarchyBenderProcessor()
 		);
 		
 		//early dump time!!!

@@ -1,6 +1,5 @@
 package agency.highlysuspect.redmill.transformer;
 
-import agency.highlysuspect.redmill.Globals;
 import agency.highlysuspect.redmill.jarmetadata.RedmillJarMetadata;
 import agency.highlysuspect.redmill.mcp.Srg;
 import org.objectweb.asm.commons.ClassRemapper;

@@ -42,6 +42,9 @@ public class RedmillModContainer extends ModContainer {
 		
 		//associate the ModContainerExt with the ModInfo - TODO: do this earlier
 		Globals.associateWithModInfo(modContainerExt, info);
+		
+		//cant do this one earlier tho
+		Globals.associateWithModContainer(modContainerExt, this);
 	}
 	
 	public final ModFileExt modFileExt;

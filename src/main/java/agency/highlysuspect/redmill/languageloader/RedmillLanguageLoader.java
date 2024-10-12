@@ -1,6 +1,7 @@
 package agency.highlysuspect.redmill.languageloader;
 
 import agency.highlysuspect.redmill.Consts;
+import agency.highlysuspect.redmill.Globals;
 import agency.highlysuspect.redmill.launchplugin.RedmillLaunchPluginService;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.ModLoadingException;
@@ -11,9 +12,12 @@ import net.neoforged.neoforgespi.language.IModLanguageLoader;
 import net.neoforged.neoforgespi.language.ModFileScanData;
 import net.neoforged.neoforgespi.locating.IModFile;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 public class RedmillLanguageLoader implements IModLanguageLoader {
+	Collection<ModContainer> validatedContainers = new ArrayList<>();
+	
 	@Override
 	public String name() {
 		return Consts.REDMILL_LANGUAGE_LOADER;
@@ -33,12 +37,12 @@ public class RedmillLanguageLoader implements IModLanguageLoader {
 	
 	@Override
 	public void validate(IModFile file, Collection<ModContainer> loadedContainers, IIssueReporting reporter) {
-		StartupNotificationManager.addModMessage("(Red Mill) Loaded all mods, preparing transformer");
+		validatedContainers.addAll(loadedContainers);
 		
-		//this is called after ModLoader loads all applicable mods
-		RedmillLaunchPluginService.INSTANCE.doneModLoading(loadedContainers.stream()
-			.filter(mc -> mc instanceof RedmillModContainer)
-			.map(mc -> (RedmillModContainer) mc)
-			.toList());
+		if(validatedContainers.size() == Globals.getAllModContainers().size()) {
+			//the last redmill mod has been loaded
+			StartupNotificationManager.addModMessage("(Red Mill) Loaded all mods, preparing transformer");
+			RedmillLaunchPluginService.INSTANCE.doneModLoading(Globals.getAllModContainers());
+		}
 	}
 }

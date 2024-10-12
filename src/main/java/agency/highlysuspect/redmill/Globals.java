@@ -1,6 +1,7 @@
 package agency.highlysuspect.redmill;
 
 import agency.highlysuspect.redmill.jarmetadata.RedmillJarMetadata;
+import agency.highlysuspect.redmill.languageloader.RedmillModContainer;
 import agency.highlysuspect.redmill.mcp.Members;
 import agency.highlysuspect.redmill.mcp.Srg;
 import agency.highlysuspect.redmill.util.StringInterner;
@@ -11,6 +12,7 @@ import net.neoforged.neoforgespi.locating.IModFile;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -86,12 +88,20 @@ public class Globals {
 		ext.modernModInfo = info;
 	}
 	
+	public static void associateWithModContainer(ModContainerExt ext, RedmillModContainer rmc) {
+		ext.modernModContainer = rmc;
+	}
+	
 	public static ModContainerExt getModContainerByOldId(String oldId) {
 		return EXT_BY_OLD_MODID.get(oldId);
 	}
 	
 	public static ModContainerExt getModContainerByNewId(String newId) {
 		return EXT_BY_NEW_MODID.get(newId);
+	}
+	
+	public static Collection<ModContainerExt> getAllModContainers() {
+		return EXT_BY_NEW_MODID.values();
 	}
 	
 	/// util ///

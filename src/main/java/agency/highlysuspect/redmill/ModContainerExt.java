@@ -1,7 +1,7 @@
 package agency.highlysuspect.redmill;
 
+import agency.highlysuspect.redmill.languageloader.RedmillModContainer;
 import agency.highlysuspect.redmill.modfilereader.McmodInfoEntryConfig;
-import net.neoforged.fml.ModContainer;
 import net.neoforged.neoforgespi.language.IModInfo;
 
 public class ModContainerExt {
@@ -15,5 +15,5 @@ public class ModContainerExt {
 	
 	//see Globals for where these are set
 	public IModInfo modernModInfo;
-	public ModContainer modernModContainer;
+	public RedmillModContainer modernModContainer;
 }
