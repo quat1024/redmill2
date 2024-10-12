@@ -51,7 +51,7 @@ public class McmodInfoConfig implements IConfigurable {
 					List<DepEntry> deps = new ArrayList<>();
 					
 					//dep on the redmill mod itself (TODO not sure if the redmill mod container is getting loaded)
-					deps.add(new DepEntry("redmill2", "BEFORE"));
+					deps.add(new DepEntry("redmill2", "AFTER"));
 					
 					//if it has a parent, dep on that
 					if(entry.parent != null && !entry.parent.isEmpty()) {

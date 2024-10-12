@@ -1,7 +1,7 @@
 package agency.highlysuspect.redmill.oldschool.net.minecraft.client.settings;
 
-public class KeyBindingProxy implements IKeyBinding {
-	public KeyBindingProxy(String name, int defaultKeyCode) {
+public class RKeyBinding implements IKeyBinding {
+	public RKeyBinding(String name, int defaultKeyCode) {
 		//...
 	}
 	

@@ -1,5 +1,6 @@
 package agency.highlysuspect.redmill.game;
 
+import agency.highlysuspect.redmill.oldschool.net.minecraftforge.common.RMinecraftForge;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 
