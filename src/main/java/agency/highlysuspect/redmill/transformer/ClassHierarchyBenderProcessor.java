@@ -1,7 +1,9 @@
 package agency.highlysuspect.redmill.transformer;
 
+import agency.highlysuspect.redmill.Consts;
 import agency.highlysuspect.redmill.mcp.DescriptorMapper;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
 
 import java.util.ListIterator;
@@ -43,24 +45,53 @@ public class ClassHierarchyBenderProcessor implements ClassProcessor, Opcodes {
 	
 	@Override
 	public void accept(ClassNode node) {
+		node.signature = null; //for decompilers (TODO remap it)
+		
+		//rewrite superclass
 		if(isMinecraftish(node.superName)) {
 			node.superName = proxyClassName(node.superName);
 		}
 		
+		//rewrite interfaces
 		node.interfaces.replaceAll(internalName -> {
 			if(isMinecraftish(internalName)) return proxyInterfaceName(internalName);
 			else return internalName;
 		});
 		
+		//rewrite fields
+		for(FieldNode field : node.fields) {
+			field.desc = proxyDescriptorToInterfaceName(field.desc);
+			field.signature = null; //for decompilers (TODO remap it)
+		}
+		
+		//rewrite methods
 		for(MethodNode method : node.methods) {
+			//rewrite method arguments and return types
 			method.desc = proxyDescriptorToInterfaceName(method.desc);
+			
+			//clear some decompiler gunk (TODO remap it)
+			if(method.localVariables != null)
+				method.localVariables.clear();
+			method.signature = null;
 			
 			ListIterator<AbstractInsnNode> iter = method.instructions.iterator();
 			while(iter.hasNext()) {
+				//inside of the method
 				AbstractInsnNode insn = iter.next();
 				
+				//rewrite LDC .class literals
+				if(insn instanceof LdcInsnNode ldcNode) {
+					if(ldcNode.cst instanceof Type ldcType &&
+						ldcType.getSort() == Type.OBJECT &&
+						isMinecraftish(ldcType.getInternalName())
+					) {
+						ldcNode.cst = Type.getObjectType(proxyClassName(ldcType.getInternalName()));
+					}
+				}
+				
+				//rewrite new, anewarray, instanceof, and checkcast
 				//note that it's called .desc even though it's an internal name. just an asm wart
-				if(insn instanceof TypeInsnNode typeNode && isMinecraftish(typeNode.desc)) {
+				else if(insn instanceof TypeInsnNode typeNode && isMinecraftish(typeNode.desc)) {
 					if(typeNode.getOpcode() == NEW || typeNode.getOpcode() == ANEWARRAY) {
 						typeNode.desc = proxyClassName(typeNode.desc);
 					} else {
@@ -68,31 +99,32 @@ public class ClassHierarchyBenderProcessor implements ClassProcessor, Opcodes {
 					}
 				}
 				
-				if(insn instanceof MethodInsnNode methodNode && isMinecraftish(methodNode.owner)) {
-					switch(methodNode.getOpcode()) {
-						case INVOKESPECIAL, INVOKESTATIC -> {
-							methodNode.owner = proxyClassName(methodNode.owner);
-						}
-						case INVOKEVIRTUAL, INVOKEINTERFACE -> {
-							methodNode.owner = proxyInterfaceName(methodNode.owner);
-							methodNode.setOpcode(INVOKEINTERFACE);
-							methodNode.itf = true;
+				//rewrite method invokes
+				else if(insn instanceof MethodInsnNode methodNode) {
+					methodNode.desc = proxyDescriptorToInterfaceName(methodNode.desc);
+					
+					//also rewrite the target of method calls into minecraft
+					if(isMinecraftish(methodNode.owner)) {
+						switch(methodNode.getOpcode()) {
+							case INVOKESPECIAL, INVOKESTATIC -> {
+								methodNode.owner = proxyClassName(methodNode.owner);
+							}
+							case INVOKEVIRTUAL, INVOKEINTERFACE -> {
+								methodNode.owner = proxyInterfaceName(methodNode.owner);
+								methodNode.setOpcode(INVOKEINTERFACE);
+								methodNode.itf = true;
+							}
 						}
 					}
-					
-					methodNode.desc = proxyDescriptorToInterfaceName(methodNode.desc);
 				}
 				
-				//Field nodes into Minecraft have already be rewritten to getters/setters
-				//this'll just be local getters and setters. Also this time .desc is an actual descriptor
-				if(insn instanceof FieldInsnNode fieldNode) {
+				//fields.
+				//Field nodes into Minecraft have already be rewritten to getters/setters by a prev processor
+				//so this'll just be non-minecraft field accesses. Also this time .desc is an actual descriptor
+				else if(insn instanceof FieldInsnNode fieldNode) {
 					fieldNode.desc = proxyDescriptorToInterfaceName(fieldNode.desc);
 				}
 			}
-		}
-		
-		for(FieldNode field : node.fields) {
-			field.desc = proxyDescriptorToInterfaceName(field.desc);
 		}
 	}
 }
