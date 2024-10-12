@@ -11,26 +11,58 @@ group = "agency.highlysuspect"
 
 String mod_id = "redmill2";
 
-repositories {
-    mavenLocal()
-}
-
 base {
     archivesName = "redmill"
 }
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
-//minecraft.accessTransformers.file rootProject.file('src/main/resources/META-INF/accesstransformer.cfg')
-//minecraft.accessTransformers.entry public net.minecraft.client.Minecraft textureManager # textureManager
+sourceSets {
+    main {
+        //unused
+        resources { srcDir 'src/generated/resources' }
+    }
+    game {
+    
+    }
+}
+
+//write an fml.modFoldersFile (see CommonLaunchHandler)
+//Disgusting hack to have 2 sourcesets where one is on SERVICE layer and the other's on GAME.
+//This won't work in real life, i'll need to futz with jarinjar or something
+File modFoldersFile = new File(project.getProjectDir(), "./runs/modFolders.properties");
+println(modFoldersFile);
+afterEvaluate {
+    var main = project.sourceSets.main;
+    var game = project.sourceSets.game;
+    
+    var res = (SourceSet set) -> { return set.output.resourcesDir.toString().replace('\\',  '/') };
+    var cla = (SourceSet set) -> { return set.output.classesDirs.getAsPath().replace('\\',  '/') };
+    
+    modFoldersFile.text = """redmill=${cla(main)}${File.pathSeparator}${res(main)}
+redmill2=${cla(game)}${File.pathSeparator}${res(game)}
+""";
+}
 
 runs {
     configureEach {
         systemProperty 'forge.logging.markers', 'REGISTRIES'
         systemProperty 'forge.logging.console.level', 'debug'
         systemProperty 'forge.enabledGameTestNamespaces', mod_id
-
-        modSource project.sourceSets.main
+        
+        systemProperty "fml.modFoldersFile", modFoldersFile.getAbsolutePath();
+        
+        modSources(project.sourceSets.main, project.sourceSets.game);
+        
+//        //im gonna krill myself
+//        var main = project.sourceSets.main;
+//        var game = project.sourceSets.game;
+//
+//        var res = (SourceSet set) -> { return set.output.resourcesDir.toString() };
+//        var cla = (SourceSet set) -> { return set.output.classesDirs.getAsPath() };
+//        systemProperty "MOD_CLASSES", "redmillasdad%%${res(main)};redmill%%${cla(main)};redmill2%%${res(game)};redmill2%%${cla(game)};"
+        
+        //systemProperty "MOD_CLASSES", "redmill2%%C:\\dev\\mc\\redmill2\\build\\resources\\main;redmill2%%C:\\dev\\mc\\redmill2\\build\\classes\\java\\main;redmill2%%C:\\dev\\mc\\redmill2\\build\\resources\\game;redmill2%%C:\\dev\\mc\\redmill2\\build\\classes\\java\\game"
     }
 
     client {
@@ -49,8 +81,6 @@ runs {
     }
 }
 
-sourceSets.main.resources { srcDir 'src/generated/resources' }
-
 // Sets up a dependency configuration called 'localRuntime'.
 // This configuration should be used instead of 'runtimeOnly' to declare
 // a dependency that will be present for runtime testing but that is
@@ -61,6 +91,11 @@ configurations {
 
 dependencies {
     implementation "net.neoforged:neoforge:21.0.167"
+    //gameImplementation "net.neoforged:neoforge:21.0.167"
+    
+    //gameCompileOnly sourceSets.main.compileClasspath //Can't fucking do this. whatever just paste it
+    gameCompileOnly "net.neoforged:neoforge:21.0.167"
+    gameCompileOnly sourceSets.main.output
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.
