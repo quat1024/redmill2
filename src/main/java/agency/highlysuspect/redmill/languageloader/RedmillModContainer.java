@@ -4,6 +4,9 @@ import agency.highlysuspect.redmill.Globals;
 import agency.highlysuspect.redmill.Consts;
 import agency.highlysuspect.redmill.ModContainerExt;
 import agency.highlysuspect.redmill.ModFileExt;
+import agency.highlysuspect.redmill.oldschool.cpw.mods.fml.common.RMod;
+import agency.highlysuspect.redmill.oldschool.cpw.mods.fml.common.event.RFMLPreInitializationEvent;
+import agency.highlysuspect.redmill.oldschool.cpw.mods.fml.common.event.IFMLPreInitializationEvent;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.neoforgespi.language.IModInfo;
@@ -11,6 +14,8 @@ import net.neoforged.neoforgespi.language.ModFileScanData;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Type;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Objects;
 
 public class RedmillModContainer extends ModContainer {
@@ -95,6 +100,25 @@ public class RedmillModContainer extends ModContainer {
 				modInstance = modClass.getConstructor().newInstance();
 			} catch (Exception e) {
 				throw Globals.mkRethrow(e, "Failed to construct redmill entrypoint " + modClass);
+			}
+			
+			//look for subscribe events
+			try {
+				IFMLPreInitializationEvent preinit = new RFMLPreInitializationEvent();
+				
+				for(Method method : modClass.getMethods()) {
+					RMod.RPreInit preInit = method.getAnnotation(RMod.RPreInit.class);
+					if(preInit != null) {
+						Consts.LOG.debug("Found @Mod$PreInitProxy method {}", method);
+						if(Modifier.isStatic(method.getModifiers())) {
+							method.invoke(preinit);
+						} else {
+							method.invoke(modInstance, preinit);
+						}
+					}
+				}
+			} catch (Throwable e) {
+				throw Globals.mkRethrow(e, "failed to do preinit stuff");
 			}
 		}
 	}

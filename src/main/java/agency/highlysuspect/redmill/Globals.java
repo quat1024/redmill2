@@ -109,7 +109,20 @@ public class Globals {
 	//Forge screen usually doesn't display the full throwable message, this is an attempt to
 	//show more of the error to the user
 	public static RuntimeException mkRethrow(Throwable parent, String messagePrefix) {
-		RuntimeException e = new RuntimeException(messagePrefix + ": " + parent.getMessage(), parent);
+		StringBuilder message = new StringBuilder(messagePrefix).append(";\n");
+		
+		Throwable t = parent;
+		while(t != null) {
+			if(t.getMessage() != null) {
+				message.append(t.getClass().getSimpleName())
+					.append(": ")
+					.append(t.getMessage())
+					.append(";\n");
+			}
+			t = t.getCause();
+		}
+		
+		RuntimeException e = new RuntimeException(message.toString(), parent);
 		//forge loves to swallow errors and only actually crash weeks later, so log it now
 		Consts.LOG.error(e);
 		return e;

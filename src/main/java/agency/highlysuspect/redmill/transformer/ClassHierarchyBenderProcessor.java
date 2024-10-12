@@ -1,6 +1,5 @@
 package agency.highlysuspect.redmill.transformer;
 
-import agency.highlysuspect.redmill.Consts;
 import agency.highlysuspect.redmill.mcp.DescriptorMapper;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -22,18 +21,25 @@ public class ClassHierarchyBenderProcessor implements ClassProcessor, Opcodes {
 		return owner.startsWith("net/minecraft") || owner.startsWith("cpw");
 	}
 	
-	private static String prefixWithI(String internalName) {
+	private static String prefix2(String s, String prefix) {
+		return prefix + s.replace("$", "$" + prefix);
+	}
+	
+	private static String prefix(String internalName, String prefix) {
 		int lastSlash = internalName.lastIndexOf('/');
-		if(lastSlash == -1) return "I" + internalName;
-		else return internalName.substring(0, lastSlash) + "/I" + internalName.substring(lastSlash + 1);
+		if(lastSlash == -1) return prefix2(internalName, prefix);
+		
+		String leadPart = internalName.substring(0, lastSlash);
+		String trailingPart = internalName.substring(lastSlash + 1);
+		return leadPart + "/" + prefix2(trailingPart, prefix);
 	}
 	
 	private static String proxyInterfaceName(String internalName) {
-		return "agency/highlysuspect/redmill/oldschool/" + prefixWithI(internalName);
+		return "agency/highlysuspect/redmill/oldschool/" + prefix(internalName, "I");
 	}
 	
 	private static String proxyClassName(String internalName) {
-		return "agency/highlysuspect/redmill/oldschool/" + internalName + "Proxy";
+		return "agency/highlysuspect/redmill/oldschool/" + prefix(internalName, "R");
 	}
 	
 	private static String proxyDescriptorToInterfaceName(String desc) {
