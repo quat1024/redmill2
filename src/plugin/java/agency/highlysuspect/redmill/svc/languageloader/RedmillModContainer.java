@@ -61,7 +61,7 @@ public class RedmillModContainer extends ModContainer {
 	
 	@Override
 	public @Nullable IEventBus getEventBus() {
-		return null;
+		return bastion.getEventBus();
 	}
 	
 	@Override

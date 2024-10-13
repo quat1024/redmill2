@@ -8,11 +8,17 @@ version="${version}"
 displayName="Red Mill"
 displayURL="https://highlysupect.agency"
 
-#logoFile="examplemod.png" #optional
-#credits="" #optional
+authors="quaternary"
+description='''Red Mill (loads before the other mods)'''
+
+[[mods]]
+modId="redmill2_late"
+version="${version}"
+displayName="Red Mill (late)"
+displayURL="https://highlysupect.agency"
 
 authors="quaternary"
-description='''Huh, this seems familiar.'''
+description='''Red Mill (loads after the other mods)'''
 
 # The [[mixins]] block allows you to declare your mixin config to FML so that it gets loaded.
 [[mixins]]
@@ -31,9 +37,19 @@ config="redmill2.mixins.json"
     versionRange="[21.0.0-beta,)"
     ordering="NONE"
     side="BOTH"
-
-# Here's another dependency
 [[dependencies.redmill2]]
+    modId="minecraft"
+    type="required"
+    versionRange="[1.21,1.21.69)"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.redmill2_late]]
+    modId="neoforge"
+    type="required"
+    versionRange="[21.0.0-beta,)"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.redmill2_late]]
     modId="minecraft"
     type="required"
     versionRange="[1.21,1.21.69)"

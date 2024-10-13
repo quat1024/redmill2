@@ -7,7 +7,8 @@ import org.apache.logging.log4j.message.Message;
 
 public class Consts {
 	//note that this is not the modid of 'plugin'. plugin isn't a mod
-	public static final String MODID = "redmill2";
+	public static final String MODID_BEFORE = "redmill2";
+	public static final String MODID_AFTER = "redmill2_late";
 	
 	public static final String REDMILL_TRANSFORMATION_SERVICE = "redmill_launch_plugin_service_springboard";
 	public static final String REDMILL_LAUNCH_PLUGIN_SERVICE = "redmill_launch_plugin_service";

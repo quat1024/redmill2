@@ -15,7 +15,9 @@ obviously contains lots of code adapted from FML and Minecraft Forge, which are 
   * you can just install both the regular jar and the game jar so it's not such a big deal
 * i'd like to make minecraft-1.4.7-hier.json with datagen
 
-## notes
+# notes
+
+## neoforge layer system
 
 see `cpw.mods.modlauncher.api.IModuleLayerManager$Layer`.
 
@@ -43,5 +45,31 @@ the main drawback of ITransformationService is that i believe you have to specif
 the mod discovery process happens from code in `plugin` because it happens before the `GAME` layer even exists (afaik). in `IModLanguageLoader#loadMod`, neoforge gives me a reference to the `GAME` ModuleLayer. at that point i peer through the looking class, pull `agency.highlysuspect.redmill.game.Bastion` through it, and the rest of the modloading process happens in `GAME` (since i need to start referring to classes from the Forge shim, like the preinit event)
 
 neoforge will ignore mods from locations it thinks it already loaded mods from; loading a transformation service counts for this. the `modFolders.properties` jank is to make neoforge think there are two separate mods that live in two separate folders (one containing the transformation services and one containing the neoforge fml mod) instead of one.
+
+## mod construction process
+
+* init the mod container (LanguageLoader#loadMod)
+* validate the mod container (LanguageLoader#validate)
+* ...after all mod containers have been validated...
+  * i detect that in RedmillLanguageLoader and do some final setup stuff there
+* in parallel (toposorted by inter-mod dependencies):
+  * ModContainer#constructMod is called
+  * FMLConstructModEvent is posted to the mod container's event bus
+    * this is that "mod event bus" ive heard so much about :heart_eyes:
+    * FMLModContainer gives each mod its own event bus
+* buncha registry events get posted to the mod bus
+* entity attribute creation events ... client reload listeners ... (and so on)
+* *then* FMLCommonSetupEvent
+  * ok so this is not a good place to fire preinit ;O
+* more random events
+* IMC events
+* FMLLoadCompleteEvent
+* and yet more events
+
+thinking about the preinit/init/postinit system. i forget exactly when they're fired in old minecraft
+
+but like, init is only dispatched after all mods received preinit, that sorta thing
+
+## ?
 
 ~~jar metadata "pre" contains just strings. suitable for reading from a classfile or from a json file.  the non-pre versions are actually linked up to each other. this makes it much easier to, say, climb up a class hierarchy while resolving trueowners. still not sure if this is really needed..?~~ sure wasn't, i made it all strings

@@ -6,6 +6,7 @@ import agency.highlysuspect.redmill.svc.languageloader.RedmillModContainer;
 import agency.highlysuspect.redmill.oldschool.cpw.mods.fml.common.RMod;
 import agency.highlysuspect.redmill.oldschool.cpw.mods.fml.common.event.RFMLPreInitializationEvent;
 import agency.highlysuspect.redmill.svc.util.IBastion;
+import net.neoforged.bus.api.IEventBus;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Method;
@@ -22,6 +23,13 @@ public class Bastion implements IBastion {
 	
 	@SuppressWarnings("unused") //reflectively accessed
 	public static final IBastion INSTANCE = new Bastion();
+	
+	public final IEventBus EVENT_BUS = new RedmillEventBus();
+	
+	@Override
+	public IEventBus getEventBus() {
+		return EVENT_BUS;
+	}
 	
 	@Override
 	public @Nullable Class<?> loadModClass(RedmillModContainer rmc) {

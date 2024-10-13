@@ -50,8 +50,10 @@ public class McmodInfoConfig implements IConfigurable {
 				for(agency.highlysuspect.redmill.svc.modfilereader.McmodInfoEntryConfig entry : entries) if(entry.getModernModid().equals(key[1])) {
 					List<DepEntry> deps = new ArrayList<>();
 					
-					//dep on the redmill mod itself (TODO not sure if the redmill mod container is getting loaded)
-					deps.add(new DepEntry("redmill2", "AFTER"));
+					//dep on the redmill mods itself
+					//yes this is the right way around
+					deps.add(new DepEntry(Consts.MODID_BEFORE, "AFTER"));
+					deps.add(new DepEntry(Consts.MODID_AFTER, "BEFORE"));
 					
 					//if it has a parent, dep on that
 					if(entry.parent != null && !entry.parent.isEmpty()) {
