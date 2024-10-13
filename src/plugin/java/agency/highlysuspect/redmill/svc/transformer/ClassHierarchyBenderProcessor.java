@@ -1,59 +1,79 @@
 package agency.highlysuspect.redmill.svc.transformer;
 
 import agency.highlysuspect.redmill.svc.mcp.DescriptorMapper;
+import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
 
-import java.util.ListIterator;
+import java.util.Collection;
 
 /**
- * Does a bit:
- * - All INVOKEVIRTUALs on classes from Minecraft are rewritten to use a proxy interface.
- * - If a class implements an interface from Minecraft, it instead implements the proxy interface.
- * - All NEWs and INVOKESPECIALs on classes from Minecraft are rewritten to use a proxy class.
- * - If a class extends from a Minecraft class, it instead extends from the proxy class.
- * - Method descriptors are rewritten to use the interfaces.
- * - Fields are rewritten to use the interfaces.
+ * Ok, so, in the model, all classes from Minecraft and Forge are split into an oldschool interface
+ * and an oldschool implementation class.
+ * If the mod calls a method from Minecraft, it should call the interface.
+ * If the mod instantiates a class from Minecraft, it should instantiate the implementation.
+ *
+ * So this processor supports this model with a bunch of rewriting:
+ * - Classes extending Minecraft classes are rewritten to extend the implementation class instead
+ * - Classes implementing Minecraft interfaces are rewritten to implement the interface instead
+ * - Field, field loads, and field stores of Minecraft classes are rewritten to the interface
+ * - NEW/ANEWARRAY are rewritten to the implementation class
+ * - INSTANCEOF and CHECKCAST use the interface
+ * - INVOKESTATIC and INVOKESPECIAL use the implementation
+ * - INVOKEVIRTUALs into Minecraft are rewritten to INVOKEINTERFACE, naturally
+ * - INVOKEINTERFACEs into Minecraft are rewritten to the interface
+ * - Annotations are rewritten to the implementation
  */
 public class ClassHierarchyBenderProcessor implements ClassProcessor, Opcodes {
-	private static boolean isMinecraftish(String owner) {
-		return owner.startsWith("net/minecraft") || owner.startsWith("cpw");
-	}
-	
+	//Foo$Bar -> IFoo$IBar
 	private static String prefix2(String s, String prefix) {
 		return prefix + s.replace("$", "$" + prefix);
 	}
 	
+	//net/minecraft/something/Foo$Bar -> net/minecraft/something/IFoo$IBar
 	private static String prefix(String internalName, String prefix) {
 		int lastSlash = internalName.lastIndexOf('/');
-		if(lastSlash == -1) return prefix2(internalName, prefix);
+		if(lastSlash == -1) return prefix2(internalName, prefix); //unpackaged class (!)
 		
-		String leadPart = internalName.substring(0, lastSlash);
+		String leadPart = internalName.substring(0, lastSlash + 1); //"net/minecraft/something/"
 		String trailingPart = internalName.substring(lastSlash + 1);
-		return leadPart + "/" + prefix2(trailingPart, prefix);
+		return leadPart + prefix2(trailingPart, prefix);
 	}
 	
-	private static String proxyInterfaceName(String internalName) {
+	//rewrites a class internal name to the INTERFACE
+	private static String classToItf(String internalName) {
 		return "agency/highlysuspect/redmill/oldschool/" + prefix(internalName, "I");
 	}
 	
-	private static String proxyClassName(String internalName) {
+	//rewrites a class internal name, IF it belongs to minecraft, to the INTERFACE
+	private static String mcClassToItf(String internalName) {
+		return ClassProcessor.isMinecraftish(internalName) ? classToItf(internalName) : internalName;
+	}
+	
+	//rewrites all classes found in a descriptor that belong to minecraft to the INTERFACE
+	private static String mcDescToItf(String desc) {
+		return DescriptorMapper.map(desc, ClassHierarchyBenderProcessor::mcClassToItf);
+	}
+	
+	//rewrites a class internal name to the PROXY
+	private static String classToProxy(String internalName) {
 		return "agency/highlysuspect/redmill/oldschool/" + prefix(internalName, "R");
 	}
 	
-	private static String proxyDescriptorToInterfaceName(String desc) {
-		return DescriptorMapper.map(desc, cls -> {
-			if(isMinecraftish(cls)) return proxyInterfaceName(cls);
-			else return cls;
-		});
+	//rewrites a class internal name, IF it belongs to minecraft, to the PROXY
+	private static String mcClassToProxy(String internalName) {
+		return ClassProcessor.isMinecraftish(internalName) ? classToProxy(internalName) : internalName;
 	}
 	
-	private static String proxyDescriptorToClassName(String desc) {
-		return DescriptorMapper.map(desc, cls -> {
-			if(isMinecraftish(cls)) return proxyClassName(cls);
-			else return cls;
-		});
+	//rewrites all classes found in a descriptor that belong to minecraft to the PROXY
+	private static String mcDescToProxy(String desc) {
+		return DescriptorMapper.map(desc, ClassHierarchyBenderProcessor::mcClassToProxy);
+	}
+	
+	//similar for annotations; in asm the annotation list is usually null if there are no annotations
+	private static void mcAnnotationsToProxy(@Nullable Collection<AnnotationNode> annotations) {
+		if(annotations != null) annotations.forEach(a -> a.desc = mcDescToProxy(a.desc));
 	}
 	
 	@Override
@@ -61,84 +81,69 @@ public class ClassHierarchyBenderProcessor implements ClassProcessor, Opcodes {
 		node.signature = null; //for decompilers (TODO remap it)
 		
 		//rewrite superclass
-		if(isMinecraftish(node.superName)) {
-			node.superName = proxyClassName(node.superName);
-		}
-		
-		//rewrite interfaces
-		node.interfaces.replaceAll(internalName -> {
-			if(isMinecraftish(internalName)) return proxyInterfaceName(internalName);
-			else return internalName;
-		});
-		
-		//rewrite fields
-		for(FieldNode field : node.fields) {
-			field.desc = proxyDescriptorToInterfaceName(field.desc);
-			field.signature = null; //for decompilers (TODO remap it)
-			
-			//rewrite annotations
-			if(field.visibleAnnotations != null) for(AnnotationNode annotation : field.visibleAnnotations) {
-				annotation.desc = proxyDescriptorToClassName(annotation.desc);
-			}
-		}
+		node.superName = mcClassToProxy(node.superName);
 		
 		//rewrite annotations
-		if(node.visibleAnnotations != null) for(AnnotationNode annotation : node.visibleAnnotations) {
-			annotation.desc = proxyDescriptorToClassName(annotation.desc);
+		mcAnnotationsToProxy(node.visibleAnnotations);
+		mcAnnotationsToProxy(node.invisibleAnnotations);
+		
+		//rewrite implements
+		node.interfaces.replaceAll(ClassHierarchyBenderProcessor::mcClassToItf);
+		
+		for(FieldNode field : node.fields) {
+			//clear some decompiler gunk (TODO remap it? lol)
+			field.signature = null;
+			
+			//rewrite field types
+			field.desc = mcDescToItf(field.desc);
+			
+			//rewrite field annotations
+			mcAnnotationsToProxy(field.visibleAnnotations);
+			mcAnnotationsToProxy(field.invisibleAnnotations);
 		}
 		
-		//rewrite methods
 		for(MethodNode method : node.methods) {
-			//rewrite method arguments and return types
-			method.desc = proxyDescriptorToInterfaceName(method.desc);
-			
-			//rewrite annotations
-			if(method.visibleAnnotations != null) for(AnnotationNode annotation : method.visibleAnnotations) {
-				annotation.desc = proxyDescriptorToClassName(annotation.desc);
-			}
-			
-			//clear some decompiler gunk (TODO remap it)
+			//clear some decompiler gunk (TODO remap it? lol)
 			if(method.localVariables != null)
 				method.localVariables.clear();
 			method.signature = null;
 			
-			ListIterator<AbstractInsnNode> iter = method.instructions.iterator();
-			while(iter.hasNext()) {
+			//rewrite method arguments and return types
+			method.desc = mcDescToItf(method.desc);
+			
+			//rewrite method annotations
+			mcAnnotationsToProxy(method.visibleAnnotations);
+			mcAnnotationsToProxy(method.invisibleAnnotations);
+			
+			for(AbstractInsnNode insn : method.instructions) {
 				//inside of the method
-				AbstractInsnNode insn = iter.next();
-				
 				//rewrite LDC .class literals
-				if(insn instanceof LdcInsnNode ldcNode) {
-					if(ldcNode.cst instanceof Type ldcType &&
-						ldcType.getSort() == Type.OBJECT &&
-						isMinecraftish(ldcType.getInternalName())
-					) {
-						ldcNode.cst = Type.getObjectType(proxyClassName(ldcType.getInternalName()));
-					}
+				if(insn instanceof LdcInsnNode ldcNode && ldcNode.cst instanceof Type ldcType && ldcType.getSort() == Type.OBJECT) {
+					ldcNode.cst = Type.getObjectType(mcClassToProxy(ldcType.getInternalName()));
 				}
 				
 				//rewrite new, anewarray, instanceof, and checkcast
 				//note that it's called .desc even though it's an internal name. just an asm wart
-				else if(insn instanceof TypeInsnNode typeNode && isMinecraftish(typeNode.desc)) {
+				else if(insn instanceof TypeInsnNode typeNode) {
 					if(typeNode.getOpcode() == NEW || typeNode.getOpcode() == ANEWARRAY) {
-						typeNode.desc = proxyClassName(typeNode.desc);
+						typeNode.desc = mcClassToProxy(typeNode.desc);
 					} else {
-						typeNode.desc = proxyInterfaceName(typeNode.desc);
+						typeNode.desc = mcClassToItf(typeNode.desc);
 					}
 				}
 				
 				//rewrite method invokes
 				else if(insn instanceof MethodInsnNode methodNode) {
-					methodNode.desc = proxyDescriptorToInterfaceName(methodNode.desc);
+					methodNode.desc = mcDescToItf(methodNode.desc);
 					
 					//also rewrite the target of method calls into minecraft
-					if(isMinecraftish(methodNode.owner)) {
+					if(ClassProcessor.isMinecraftish(methodNode.owner)) {
 						switch(methodNode.getOpcode()) {
 							case INVOKESPECIAL, INVOKESTATIC -> {
-								methodNode.owner = proxyClassName(methodNode.owner);
+								methodNode.owner = classToProxy(methodNode.owner);
 							}
 							case INVOKEVIRTUAL, INVOKEINTERFACE -> {
-								methodNode.owner = proxyInterfaceName(methodNode.owner);
+								methodNode.owner = classToItf(methodNode.owner);
 								methodNode.setOpcode(INVOKEINTERFACE);
 								methodNode.itf = true;
 							}
@@ -146,11 +151,11 @@ public class ClassHierarchyBenderProcessor implements ClassProcessor, Opcodes {
 					}
 				}
 				
-				//fields.
-				//Field nodes into Minecraft have already be rewritten to getters/setters by a prev processor
-				//so this'll just be non-minecraft field accesses. Also this time .desc is an actual descriptor
+				//field accesses and writes. Field accesses into Minecraft have already been rewritten
+				//to getters/setters by a prev processor, so this'll just catch mods storing Minecraft classes in fields.
+				//Also this time .desc is an actual descriptor
 				else if(insn instanceof FieldInsnNode fieldNode) {
-					fieldNode.desc = proxyDescriptorToInterfaceName(fieldNode.desc);
+					fieldNode.desc = mcDescToItf(fieldNode.desc);
 				}
 			}
 		}

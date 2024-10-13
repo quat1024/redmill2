@@ -14,10 +14,14 @@ public interface ClassProcessor extends Consumer<ClassNode> {
 				try {
 					processor.accept(classNode);
 				} catch (Exception e) {
-					throw Globals.mkRethrow(e, processor.getClass().getSimpleName() + "threw exception");
+					throw Globals.mkRethrow(e, processor.getClass().getSimpleName() + " threw exception");
 				}
 			}
 		};
+	}
+	
+	static boolean isMinecraftish(String owner) {
+		return owner.startsWith("net/minecraft") || owner.startsWith("cpw");
 	}
 	
 	static void assignClassNode(ClassNode target, ClassNode source) {
