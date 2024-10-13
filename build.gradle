@@ -1,21 +1,18 @@
 plugins {
-    id 'java-library'
-    id 'eclipse'
-    id 'idea'
-    id 'maven-publish'
-    id 'net.neoforged.gradle.userdev' version '7.0.145'
+    id "java-library"
+    id "eclipse"
+    id "idea"
+    id "maven-publish"
+    id "net.neoforged.gradle.userdev" version "7.0.145"
 }
 
 version = "0.0.1"
 group = "agency.highlysuspect"
-
 String mod_id = "redmill2";
 
-base {
-    archivesName = "redmill"
-}
-
+base { archivesName = "redmill" }
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+tasks.withType(JavaCompile).configureEach { options.encoding = "UTF-8" }
 
 sourceSets {
     plugin {}
@@ -24,7 +21,8 @@ sourceSets {
 
 //write an fml.modFoldersFile (see CommonLaunchHandler)
 //Disgusting hack to have 2 sourcesets where one is on SERVICE layer and the other's on GAME.
-//This won't work in real life, i'll need to futz with jarinjar or something
+//This doesn't do anything in prod but it fixes runClient without needing to like,
+//completely split the project into two subprojects (yuck)
 File modFoldersFile = new File(project.getProjectDir(), "./runs/modFolders.properties");
 println(modFoldersFile);
 afterEvaluate {
@@ -37,42 +35,30 @@ afterEvaluate {
     modFoldersFile.text = """redmill=${cla(plugin)}${File.pathSeparator}${res(plugin)}
 redmill2=${cla(game)}${File.pathSeparator}${res(game)}
 """;
+    println("wrote runs/modFolders.properties :)");
 }
 
 runs {
     configureEach {
-        systemProperty 'forge.logging.markers', 'REGISTRIES'
-        systemProperty 'forge.logging.console.level', 'debug'
-        systemProperty 'forge.enabledGameTestNamespaces', mod_id
+        systemProperty "forge.logging.markers", "REGISTRIES"
+        systemProperty "forge.logging.console.level", "debug"
+        systemProperty "forge.enabledGameTestNamespaces", mod_id
         
         systemProperty "fml.modFoldersFile", modFoldersFile.getAbsolutePath();
         
         modSources(project.sourceSets.plugin, project.sourceSets.game);
     }
-
-    client {
-    
-    }
-
-    server {
-        programArgument '--nogui'
-    }
-
-    gameTestServer {
-    }
-
+    client {}
+    server { programArgument "--nogui" }
+    //todo actually do datagen
     data {
-        programArguments.addAll '--mod', mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
+        programArguments.addAll "--mod", mod_id, "--all", "--output", file("src/generated/resources/").getAbsolutePath(), "--existing", file("src/main/resources/").getAbsolutePath()
     }
 }
 
-// Sets up a dependency configuration called 'localRuntime'.
-// This configuration should be used instead of 'runtimeOnly' to declare
-// a dependency that will be present for runtime testing but that is
-// "optional", meaning it will not be pulled by dependents of this mod.
-configurations {
-    runtimeClasspath.extendsFrom localRuntime
-}
+//configurations {
+//    runtimeClasspath.extendsFrom localRuntime
+//}
 
 dependencies {
     pluginImplementation "net.neoforged:neoforge:21.0.167"
@@ -82,20 +68,48 @@ dependencies {
     gameCompileOnly sourceSets.plugin.output
 }
 
-// This block of code expands all declared replace properties in the specified resource targets.
-// A missing property will result in an error. Properties are expanded using ${} Groovy notation.
-// When "copyIdeResources" is enabled, this will also run before the game launches in IDE environments.
-// See https://docs.gradle.org/current/dsl/org.gradle.language.jvm.tasks.ProcessResources.html
-tasks.withType(ProcessResources).configureEach {
-    filesMatching(['META-INF/neoforge.mods.toml']) {
-        expand "version": version;
+//Build redmill-gamelayer.jar which contains everything destined for the GAME layers
+tasks.register("gameJar", Jar) {
+    group "redmill"
+    
+    dependsOn tasks.gameClasses
+    dependsOn tasks.processGameResources
+    
+    archiveBaseName = "redmill-gamelayer"
+    from sourceSets.game.output
+}
+
+//Configure the main jar task to directly include all the PLUGIN/SERVICE layer classes, and JIJ redmill-gamelayer.jar
+tasks.jar.configure {
+    dependsOn tasks.gameJar
+    dependsOn tasks.processGameResources
+    dependsOn tasks.processPluginResources
+    
+    from sourceSets.plugin.output
+
+    into("META-INF/jarjar/") {
+        //jij metadata is copied with a ProcessResources below
+        from tasks.gameJar.archiveFile
     }
 }
 
-// Example configuration to allow publishing using the maven-publish plugin
+tasks.processGameResources.configure {
+    filesMatching(["META-INF/neoforge.mods.toml"]) {
+        expand "version": version
+    }
+}
+
+//Also rewrite the jarjar metadata.json file to contain the correct filename of redmill-gamelayer.jar
+tasks.processPluginResources.configure {
+    filesMatching(["META-INF/neoforge.mods.toml", "META-INF/jarjar/metadata.json"]) {
+        expand "version": version,
+                "jarjarFilename": tasks.gameJar.archiveFile.get().asFile.getName();
+    }
+}
+
 publishing {
     publications {
-        register('mavenJava', MavenPublication) {
+        register("mavenJava", MavenPublication) {
             from components.java
         }
     }
@@ -106,11 +120,6 @@ publishing {
     }
 }
 
-tasks.withType(JavaCompile).configureEach {
-    options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
-}
-
-// IDEA no longer automatically downloads sources/javadoc jars for dependencies, so we need to explicitly enable the behavior.
 idea {
     module {
         downloadSources = true

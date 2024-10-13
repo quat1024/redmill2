@@ -10,10 +10,9 @@ obviously contains lots of code adapted from FML and Minecraft Forge, which are 
 
 ## todo
 
-* ~~can't seem to make a redmill2 mod container load, does nf not want a jar to have transformation services & also be a mod~~
-  * fixed with some horrible gradle shit involving the `fml.modFoldersFile` system property
-  * making a "real" subproject is probably the correct way to fix it
-  * WILL NEED some bullshit to happen in production!! Probably need to play with jarinjar!
+* my fucked up and evil jarjar isn't working
+  * the -game jar isn't loaded in prod, neoforge isn't even picking up on the jarjar
+  * you can just install both the regular jar and the game jar so it's not such a big deal
 * i'd like to make minecraft-1.4.7-hier.json with datagen
 
 ## notes

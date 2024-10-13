@@ -1,0 +1,16 @@
+{
+	"jars": [
+		{
+			"identifier": {
+				"group": "agency.highlysuspect.redmill",
+				"artifact": "redmill-gamelayer"
+			},
+			"version": {
+				"range": "[${version}]",
+				"artifactVersion": "${version}"
+			},
+			"path": "META-INF/jarjar/${jarjarFilename}",
+			"isObfuscated": false
+		}
+	]
+}
