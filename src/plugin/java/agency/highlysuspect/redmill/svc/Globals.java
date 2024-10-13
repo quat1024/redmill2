@@ -44,14 +44,15 @@ public class Globals {
 			InputStream methodsIn = Globals.class.getResourceAsStream("/redmill-stuff/minecraft-1.4.7-methods.csv");
 			InputStream joinedIn = Globals.class.getResourceAsStream("/redmill-stuff/minecraft-1.4.7-joined.srg");
 		) {
-			StartupNotificationManager.addModMessage("(Red Mill) Loading metadata");
+			Consts.windowLog("Loading metadata/SRG");
 			minecraft147Meta = new RedmillJarMetadata(hierIn, mem);
 			
-			StartupNotificationManager.addModMessage("(Red Mill) Loading MCP data");
 			Members fields = new Members().read(fieldsIn, mem);
 			Members methods = new Members().read(methodsIn, mem);
 			Srg srg = new Srg().read(joinedIn, mem);
 			minecraft147Srg = srg.named(fields, methods);
+			
+			Consts.windowLog("Done loading metadata/SRG");
 		} catch (Exception e) {
 			throw mkRethrow(e, "Failed to load red mill metadata");
 		}

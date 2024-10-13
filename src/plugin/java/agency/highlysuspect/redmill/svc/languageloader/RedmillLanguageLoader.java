@@ -30,7 +30,7 @@ public class RedmillLanguageLoader implements IModLanguageLoader {
 	
 	@Override
 	public ModContainer loadMod(IModInfo info, ModFileScanData modFileScanData, ModuleLayer layer) throws ModLoadingException {
-		StartupNotificationManager.addModMessage("(Red Mill) Loading " + info.getModId());
+		Consts.windowLog("Making mod container for {}", info.getModId());
 		
 		return new RedmillModContainer(info, modFileScanData, layer); // <-- does the real work
 	}
@@ -41,7 +41,7 @@ public class RedmillLanguageLoader implements IModLanguageLoader {
 		
 		if(validatedContainers.size() == Globals.getAllModContainers().size()) {
 			//the last redmill mod has been loaded
-			StartupNotificationManager.addModMessage("(Red Mill) Loaded all mods, preparing transformer");
+			Consts.windowLog("Found all mods, preparing transformer");
 			RedmillLaunchPluginService.INSTANCE.doneModLoading(Globals.getAllModContainers());
 		}
 	}

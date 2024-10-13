@@ -36,10 +36,8 @@ public class McmodInfoModFileReader implements IModFileReader {
 	public @Nullable IModFile read(JarContents jar, ModFileDiscoveryAttributes attributes) {
 		Optional<URI> mcmodInfoFile = jar.findFile("mcmod.info");
 		if(mcmodInfoFile.isPresent()) {
-			Consts.LOG.info("Got jar with MCMOD info: {} attrs {}", jar.getPrimaryPath(), attributes);
-			
 			try {
-				StartupNotificationManager.addModMessage("(Red Mill) Examining " + jar.getPrimaryPath().getFileName());
+				Consts.windowLog("Examining " + jar.getPrimaryPath().getFileName());
 				
 				//does this have a coremod in it?
 				//Note that jar.getManifest() is blank at this point in time, so read the file manually

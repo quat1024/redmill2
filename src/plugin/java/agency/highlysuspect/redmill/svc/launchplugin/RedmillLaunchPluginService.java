@@ -77,7 +77,7 @@ public class RedmillLaunchPluginService implements ILaunchPluginService {
 		
 		//early dump time!!!
 		if(Globals.CFG.earlyDump) {
-			StartupNotificationManager.addModMessage("(Red Mill) Beginning early dump of " + toBeMilled.size() + " classes");
+			Consts.windowLog("Beginning early dump of {} classes", toBeMilled.size());
 			
 			for(ModFileExt mfe : modFiles) {
 				try(ZipInputStream zin = new ZipInputStream(Files.newInputStream(mfe.modernModFile.getFilePath()))) {
@@ -102,7 +102,7 @@ public class RedmillLaunchPluginService implements ILaunchPluginService {
 				}
 			}
 			
-			StartupNotificationManager.addModMessage("(Red Mill) Done early dumping");
+			Consts.windowLog("Done early dumping");
 		}
 	}
 	
