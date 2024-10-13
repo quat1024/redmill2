@@ -2,6 +2,7 @@ package agency.highlysuspect.redmill.svc.jarmetadata;
 
 import agency.highlysuspect.redmill.svc.util.StringInterner;
 import com.google.gson.JsonObject;
+import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.tree.MethodNode;
 
 import java.util.ArrayDeque;
@@ -52,7 +53,7 @@ public class MethodMetaEntry {
 	
 	//TODO: do I actually need to recurse into superinterfaces?
 	// I think mappings files include copies of methods defined in interfaces
-	public void resolveTrueOwner(Function<String, ClassMetaEntry> classResolver) {
+	public void resolveTrueOwner(Function<String, @Nullable ClassMetaEntry> classResolver) {
 		if(trueOwner != null) return;
 		
 		//first, assume the method is unique

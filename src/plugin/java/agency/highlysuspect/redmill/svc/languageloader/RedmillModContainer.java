@@ -21,7 +21,6 @@ public class RedmillModContainer extends ModContainer {
 		
 		// file stuff
 		
-		this.modFileScanData = modFileScanData;
 		this.modFileExt = Globals.getModFileExt(info.getOwningFile().getFile());
 		if(modFileExt == null)
 			throw new IllegalStateException("No ModFileExt for " + info.getOwningFile().getFile());
@@ -53,7 +52,6 @@ public class RedmillModContainer extends ModContainer {
 	public final ModContainerExt modContainerExt;
 	
 	public final Module module;
-	public ModFileScanData modFileScanData;
 	
 	@Nullable public String modClassName;
 	@Nullable public Class<?> modClass;
@@ -68,6 +66,7 @@ public class RedmillModContainer extends ModContainer {
 	
 	@Override
 	protected void constructMod() {
+		Consts.windowLog("Constructing {}", modContainerExt.oldModid);
 		modClass = bastion.loadModClass(this);
 		modInstance = bastion.constructModClass(this);
 		

@@ -13,6 +13,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -58,8 +59,16 @@ public class RedmillJarMetadata {
 			.collect(Collectors2.toJsonArray());
 	}
 	
+	public Collection<String> getClasses() {
+		return classMeta.keySet();
+	}
+	
+	public void resolveAllTrueOwners(Collection<RedmillJarMetadata> metas) {
+		resolveAllTrueOwners(metas.toArray(RedmillJarMetadata[]::new));
+	}
+	
 	public void resolveAllTrueOwners(RedmillJarMetadata... classpath) {
-		Function<String, ClassMetaEntry> lookup = name -> {
+		Function<String, @Nullable ClassMetaEntry> lookup = name -> {
 			//first try myself
 			ClassMetaEntry cme = classMeta.get(name);
 			if(cme != null) return cme;

@@ -70,6 +70,10 @@ public class Globals {
 		return MOD_FILE_EXT.get(file);
 	}
 	
+	public static Collection<ModFileExt> getAllModFiles() {
+		return MOD_FILE_EXT.values();
+	}
+	
 	/// ModContainerExt ///
 	
 	private static final Map<String, ModContainerExt> EXT_BY_OLD_MODID = new ConcurrentHashMap<>();

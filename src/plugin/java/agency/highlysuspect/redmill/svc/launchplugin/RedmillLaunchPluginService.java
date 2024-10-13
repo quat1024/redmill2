@@ -41,31 +41,27 @@ public class RedmillLaunchPluginService implements ILaunchPluginService {
 	private static final EnumSet<Phase> BEFORE = EnumSet.of(Phase.BEFORE);
 	
 	private ClassProcessor processor;
-	private final Set<Type> toBeMilled = new HashSet<>();
+	private final Set<String> toBeMilled = new HashSet<>();
 	
-	public void doneModLoading(Collection<ModContainerExt> modContainerExts) {
+	public void doneModLoading(Collection<ModFileExt> modFileExts, Collection<ModContainerExt> modContainerExts) {
 		List<RedmillModContainer> rmcs = modContainerExts.stream()
 			.map(mce -> mce.modernModContainer)
 			.toList();
 		
-		Set<ModFileExt> modFiles = rmcs.stream()
-			.map(rmc -> rmc.modFileExt)
-			.collect(Collectors.toSet());
-		
-		Consts.LOG.info("RedmillLaunchPluginService: got {} mods from {} files ({})",
+		Consts.LOG.info("RedmillLaunchPluginService: got {} mod{} from {} file{} ({})",
 			rmcs.size(),
-			modFiles.size(),
-			rmcs.stream().map(rmc -> rmc.modContainerExt.oldModid).collect(Collectors.joining(", ")));
+			rmcs.size() == 1 ? "" : "s",
+			modFileExts.size(),
+			modFileExts.size() == 1 ? "" : "s",
+			modContainerExts.stream().map(mce -> mce.oldModid).collect(Collectors.joining(", ")));
 		
 		//list all the classes that need to be milled
-		for(RedmillModContainer rmc : rmcs) {
-			rmc.modFileScanData.getClasses().forEach(cd -> toBeMilled.add(cd.clazz()));
-		}
+		modFileExts.forEach(mfe -> toBeMilled.addAll(mfe.jarMetadata.getClasses()));
 		
 		//aggregate all jar metadata
 		RedmillJarMetadata compositeMetadata = RedmillJarMetadata.composite(Stream.concat(
 			Stream.of(Globals.minecraft147Meta),
-			modFiles.stream().map(mfe -> mfe.jarMetadata)
+			modFileExts.stream().map(mfe -> mfe.jarMetadata)
 		));
 		
 		//make our jar processor
@@ -79,7 +75,7 @@ public class RedmillLaunchPluginService implements ILaunchPluginService {
 		if(Globals.CFG.earlyDump) {
 			Consts.windowLog("Beginning early dump of {} classes", toBeMilled.size());
 			
-			for(ModFileExt mfe : modFiles) {
+			for(ModFileExt mfe : modFileExts) {
 				try(ZipInputStream zin = new ZipInputStream(Files.newInputStream(mfe.modernModFile.getFilePath()))) {
 					ZipEntry entry;
 					while((entry = zin.getNextEntry()) != null) {
@@ -113,7 +109,7 @@ public class RedmillLaunchPluginService implements ILaunchPluginService {
 	
 	@Override
 	public EnumSet<Phase> handlesClass(Type classType, boolean isEmpty) {
-		return toBeMilled.contains(classType) ? BEFORE : NOPE;
+		return toBeMilled.contains(classType.getInternalName()) ? BEFORE : NOPE;
 	}
 	
 	@Override
