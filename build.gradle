@@ -18,13 +18,8 @@ base {
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
 sourceSets {
-    main {
-        //unused
-        resources { srcDir 'src/generated/resources' }
-    }
-    game {
-    
-    }
+    plugin {}
+    game {}
 }
 
 //write an fml.modFoldersFile (see CommonLaunchHandler)
@@ -33,13 +28,13 @@ sourceSets {
 File modFoldersFile = new File(project.getProjectDir(), "./runs/modFolders.properties");
 println(modFoldersFile);
 afterEvaluate {
-    var main = project.sourceSets.main;
+    var plugin = project.sourceSets.plugin;
     var game = project.sourceSets.game;
     
     var res = (SourceSet set) -> { return set.output.resourcesDir.toString().replace('\\',  '/') };
     var cla = (SourceSet set) -> { return set.output.classesDirs.getAsPath().replace('\\',  '/') };
     
-    modFoldersFile.text = """redmill=${cla(main)}${File.pathSeparator}${res(main)}
+    modFoldersFile.text = """redmill=${cla(plugin)}${File.pathSeparator}${res(plugin)}
 redmill2=${cla(game)}${File.pathSeparator}${res(game)}
 """;
 }
@@ -52,17 +47,7 @@ runs {
         
         systemProperty "fml.modFoldersFile", modFoldersFile.getAbsolutePath();
         
-        modSources(project.sourceSets.main, project.sourceSets.game);
-        
-//        //im gonna krill myself
-//        var main = project.sourceSets.main;
-//        var game = project.sourceSets.game;
-//
-//        var res = (SourceSet set) -> { return set.output.resourcesDir.toString() };
-//        var cla = (SourceSet set) -> { return set.output.classesDirs.getAsPath() };
-//        systemProperty "MOD_CLASSES", "redmillasdad%%${res(main)};redmill%%${cla(main)};redmill2%%${res(game)};redmill2%%${cla(game)};"
-        
-        //systemProperty "MOD_CLASSES", "redmill2%%C:\\dev\\mc\\redmill2\\build\\resources\\main;redmill2%%C:\\dev\\mc\\redmill2\\build\\classes\\java\\main;redmill2%%C:\\dev\\mc\\redmill2\\build\\resources\\game;redmill2%%C:\\dev\\mc\\redmill2\\build\\classes\\java\\game"
+        modSources(project.sourceSets.plugin, project.sourceSets.game);
     }
 
     client {
@@ -90,12 +75,11 @@ configurations {
 }
 
 dependencies {
-    implementation "net.neoforged:neoforge:21.0.167"
-    //gameImplementation "net.neoforged:neoforge:21.0.167"
+    pluginImplementation "net.neoforged:neoforge:21.0.167"
     
-    //gameCompileOnly sourceSets.main.compileClasspath //Can't fucking do this. whatever just paste it
+    //gameCompileOnly sourceSets.plugin.compileClasspath //Can't fucking do this. whatever just paste it
     gameCompileOnly "net.neoforged:neoforge:21.0.167"
-    gameCompileOnly sourceSets.main.output
+    gameCompileOnly sourceSets.plugin.output
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.

@@ -39,9 +39,9 @@ the main drawback of ITransformationService is that i believe you have to specif
 
 ## so what does this mean for the mod
 
-`src/game/java` contains stuff to be loaded on the GAME layer, neoforge.mods.toml, and classes that milled mods need to see like the Forge shim. `src/main/java` contains stuff on the SERVICE/PLUGIN layer. stuff in `main` can't see the stuff in `game`. 
+`src/game/java` contains stuff to be loaded on the GAME layer, neoforge.mods.toml, and classes that milled mods need to see like the Forge shim. `src/plugin/java` contains stuff on the SERVICE/PLUGIN layer. stuff in `plugin` can't see the stuff in `game`. (if you ever see me talk about the "main" sourceset that's `plugin` before i renamed it)
 
-most of the mod discovery process happens from code in `main` because it happens before the `GAME` layer even exists (afaik). in `IModLanguageLoader#loadMod` neoforge gives me the `GAME` ModuleLayer. i peer through the looking class, pull `agency.highlysuspect.redmill.game.Bastion` through it, and the rest of the modloading process happens in `GAME` (since i need to start referring to classes from the Forge shim, like the preinit event)
+the mod discovery process happens from code in `plugin` because it happens before the `GAME` layer even exists (afaik). in `IModLanguageLoader#loadMod`, neoforge gives me a reference to the `GAME` ModuleLayer. at that point i peer through the looking class, pull `agency.highlysuspect.redmill.game.Bastion` through it, and the rest of the modloading process happens in `GAME` (since i need to start referring to classes from the Forge shim, like the preinit event)
 
 neoforge will ignore mods from locations it thinks it already loaded mods from; loading a transformation service counts for this. the `modFolders.properties` jank is to make neoforge think there are two separate mods that live in two separate folders (one containing the transformation services and one containing the neoforge fml mod) instead of one.
 
