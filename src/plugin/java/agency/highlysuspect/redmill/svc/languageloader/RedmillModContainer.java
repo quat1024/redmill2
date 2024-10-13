@@ -14,8 +14,6 @@ import org.objectweb.asm.Type;
 
 public class RedmillModContainer extends ModContainer {
 	
-	private static final Type CPW_MOD = Type.getObjectType("cpw/mods/fml/common/Mod");
-	
 	public RedmillModContainer(IModInfo info, ModFileScanData modFileScanData, ModuleLayer gameLayer) {
 		super(info);
 		
@@ -60,6 +58,8 @@ public class RedmillModContainer extends ModContainer {
 	@Nullable public String modClassName;
 	@Nullable public Class<?> modClass;
 	@Nullable public Object modInstance;
+	
+	private static final Type CPW_MOD = Type.getObjectType("cpw/mods/fml/common/Mod");
 	
 	@Override
 	public @Nullable IEventBus getEventBus() {

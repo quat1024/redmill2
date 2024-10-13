@@ -14,7 +14,6 @@ import cpw.mods.jarhandling.SecureJar;
 import cpw.mods.jarhandling.impl.SimpleJarMetadata;
 import net.neoforged.fml.loading.moddiscovery.ModFile;
 import net.neoforged.fml.loading.moddiscovery.ModFileInfo;
-import net.neoforged.fml.loading.progress.StartupNotificationManager;
 import net.neoforged.neoforgespi.locating.IModFile;
 import net.neoforged.neoforgespi.locating.IModFileReader;
 import net.neoforged.neoforgespi.locating.ModFileDiscoveryAttributes;
@@ -51,14 +50,14 @@ public class McmodInfoModFileReader implements IModFileReader {
 				}
 				
 				//parse mcmod.info
-				agency.highlysuspect.redmill.svc.modfilereader.McmodInfoConfig mcmodInfoConfig = new agency.highlysuspect.redmill.svc.modfilereader.McmodInfoConfig(mcmodInfoFile.get().toURL().openStream());
+				McmodInfoConfig mcmodInfoConfig = new McmodInfoConfig(mcmodInfoFile.get().toURL().openStream());
 				
 				if(mcmodInfoConfig.entries.isEmpty()) {
 					Consts.LOG.warn("Jar {} doesn't list any mods in its mcmod.info! Refusing to load it.", jar.getPrimaryPath());
 					return null;
 				}
 				
-				agency.highlysuspect.redmill.svc.modfilereader.McmodInfoEntryConfig firstMod = mcmodInfoConfig.entries.getFirst();
+				McmodInfoEntryConfig firstMod = mcmodInfoConfig.entries.getFirst();
 				String moduleId = firstMod.getModernModid();
 				String moduleVersion = firstMod.getModernVersion();
 				
@@ -68,7 +67,7 @@ public class McmodInfoModFileReader implements IModFileReader {
 				
 				//this has to be globally exposed early, since the IModFile stuff sometimes resolves modids
 				//TODO seems bad for like, addons and stuff
-				for(agency.highlysuspect.redmill.svc.modfilereader.McmodInfoEntryConfig e : mcmodInfoConfig.entries) {
+				for(McmodInfoEntryConfig e : mcmodInfoConfig.entries) {
 					Globals.addModContainerExt(new ModContainerExt(e));
 				}
 				
