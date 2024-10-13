@@ -12,9 +12,7 @@ import java.lang.reflect.Modifier;
 
 public class Bastion implements IBastion {
 	static {
-		System.out.println("Hello from Bastion!");
-		System.out.println(Bastion.class.getClassLoader());
-		System.out.println(Bastion.class.getModule());
+		Consts.LOG.info("Hello from Bastion, current module: {}", Bastion.class.getModule());
 	}
 	
 	public void preinitMod(RedmillModContainer rmc) {
