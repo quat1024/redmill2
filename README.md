@@ -35,14 +35,14 @@ the classloading is such that BOOT can see nothing else, SERVICE and PLUGIN can 
 
 very cool that stuff like IModFileReader is exposed in the first place! I haven't looked at Sinytra Connector's code but i imagine they're big fans of that
 
-the main drawback of ITransformationService is that i believe you have to specify the complete set of classes you want to transform up-front, but the transformation services get initialized before the imodfilereaders get to load mods (i think??), so unless i want to do mod discovery on my *own* i need to use an ILaunchPluginService. i can just do the regular mod discovery process, enumerate classes while im doing that, and pass the complete list of classes to the ILaunchPluginService
-
-other than that hiccup itransformationservice is soooo well thought out... very cool
+the main drawback of ITransformationService is that i believe you have to specify the complete set of classes you want to transform up-front, but the transformation services get initialized way before imodfilereaders get to load mods. so unless i want to make my own shitty copy of the neoforge mod discovery process, in order to transform classes from milled mods, i need to use an ILaunchPluginService (just do the regular mod discovery process, enumerate mod classes there, and pass the list off to the ILaunchPluginService). the workaround is loading an ITransformationService but not actually using it for doing any class transformation, instead just reflecting into the list of ILaunchPluginServices and adding my own. you're definitely not supposed to do that.
 
 ## so what does this mean for the mod
 
-`src/game/java` contains stuff to be loaded on the GAME layer, neoforge.mods.toml, and classes that milled mods need to see like the Forge shim. `src/main/java` contains stuff on the SERVICE/PLUGIN layer.
+`src/game/java` contains stuff to be loaded on the GAME layer, neoforge.mods.toml, and classes that milled mods need to see like the Forge shim. `src/main/java` contains stuff on the SERVICE/PLUGIN layer. stuff in `main` can't see the stuff in `game`. 
 
-stuff in `main` can't see the stuff in `game`. the interface `IBastion` is the upwards bridge; it's loaded from `main` but implemented in `game` with a cheeky little `Class.forName`.
+most of the mod discovery process happens from code in `main` because it happens before the `GAME` layer even exists (afaik). in `IModLanguageLoader#loadMod` neoforge gives me the `GAME` ModuleLayer. i peer through the looking class, pull `agency.highlysuspect.redmill.game.Bastion` through it, and the rest of the modloading process happens in `GAME` (since i need to start referring to classes from the Forge shim, like the preinit event)
+
+neoforge will ignore mods from locations it thinks it already loaded mods from; loading a transformation service counts for this. the `modFolders.properties` jank is to make neoforge think there are two separate mods that live in two separate folders (one containing the transformation services and one containing the neoforge fml mod) instead of one.
 
 ~~jar metadata "pre" contains just strings. suitable for reading from a classfile or from a json file.  the non-pre versions are actually linked up to each other. this makes it much easier to, say, climb up a class hierarchy while resolving trueowners. still not sure if this is really needed..?~~ sure wasn't, i made it all strings

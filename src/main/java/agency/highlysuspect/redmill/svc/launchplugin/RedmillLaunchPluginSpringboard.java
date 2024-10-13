@@ -35,6 +35,7 @@ public class RedmillLaunchPluginSpringboard implements ITransformationService {
 	@Override
 	public void onLoad(IEnvironment env, Set<String> otherServices) throws IncompatibleEnvironmentException {
 		//This gets called a bit before initialize(), but the IEnvironment is more populated in initialize()
+		//notably the GAMEDIR is missing here
 	}
 	
 	@Override
