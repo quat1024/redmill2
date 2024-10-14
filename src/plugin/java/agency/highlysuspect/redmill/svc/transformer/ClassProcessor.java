@@ -21,7 +21,15 @@ public interface ClassProcessor extends Consumer<ClassNode> {
 	}
 	
 	static boolean isMinecraftish(String owner) {
-		return owner.startsWith("net/minecraft") || owner.startsWith("cpw");
+		return isMinecraft(owner) || isForge(owner);
+	}
+	
+	static boolean isMinecraft(String owner) {
+		return owner.startsWith("net/minecraft/");
+	}
+	
+	static boolean isForge(String owner) {
+		return owner.startsWith("net/minecraftforge") || owner.startsWith("cpw/");
 	}
 	
 	static void assignClassNode(ClassNode target, ClassNode source) {

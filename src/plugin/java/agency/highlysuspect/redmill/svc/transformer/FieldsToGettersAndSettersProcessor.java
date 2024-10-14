@@ -11,6 +11,8 @@ import java.util.ListIterator;
 public class FieldsToGettersAndSettersProcessor implements ClassProcessor, Opcodes {
 	@Override
 	public void accept(ClassNode node) {
+		boolean isForge = ClassProcessor.isForge(node.name);
+		
 		for(MethodNode method : node.methods) {
 			ListIterator<AbstractInsnNode> iter = method.instructions.iterator();
 			while(iter.hasNext()) {
@@ -19,44 +21,32 @@ public class FieldsToGettersAndSettersProcessor implements ClassProcessor, Opcod
 					switch(insn.getOpcode()) {
 						case GETSTATIC -> {
 							MethodInsnNode getter = new MethodInsnNode(
-								INVOKESTATIC,
-								fieldNode.owner,
-								"get_" + fieldNode.name,
-								"()" + fieldNode.desc,
-								false
+								INVOKESTATIC, fieldNode.owner,
+								"get_" + fieldNode.name, "()" + fieldNode.desc, false
 							);
 							iter.remove();
 							iter.add(getter);
 						}
 						case PUTSTATIC -> {
 							MethodInsnNode setter = new MethodInsnNode(
-								INVOKESTATIC,
-								fieldNode.owner,
-								"set_" + fieldNode.name,
-								"(" + fieldNode.desc + ")V",
-								false
+								INVOKESTATIC, fieldNode.owner,
+								"set_" + fieldNode.name, "(" + fieldNode.desc + ")V", false
 							);
 							iter.remove();
 							iter.add(setter);
 						}
 						case GETFIELD -> {
 							MethodInsnNode getter = new MethodInsnNode(
-								INVOKEVIRTUAL,
-								fieldNode.owner,
-								"get_" + fieldNode.name,
-								"()" + fieldNode.desc,
-								false
+								INVOKEVIRTUAL, fieldNode.owner,
+								"get_" + fieldNode.name, "()" + fieldNode.desc, false
 							);
 							iter.remove();
 							iter.add(getter);
 						}
 						case PUTFIELD -> {
 							MethodInsnNode setter = new MethodInsnNode(
-								INVOKEVIRTUAL,
-								fieldNode.owner,
-								"set_" + fieldNode.name,
-								"(" + fieldNode.desc + ")V",
-								false
+								INVOKEVIRTUAL, fieldNode.owner,
+								"set_" + fieldNode.name, "(" + fieldNode.desc + ")V", false
 							);
 							iter.remove();
 							iter.add(setter);

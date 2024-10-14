@@ -80,6 +80,11 @@ public class ClassHierarchyBenderProcessor implements ClassProcessor, Opcodes {
 	public void accept(ClassNode node) {
 		node.signature = null; //for decompilers (TODO remap it)
 		
+		//TODO just for processing forge.jar thru this...
+		if(ClassProcessor.isForge(node.name)) {
+			node.name = mcClassToProxy(node.name);
+		}
+		
 		//rewrite superclass
 		node.superName = mcClassToProxy(node.superName);
 		
@@ -155,6 +160,7 @@ public class ClassHierarchyBenderProcessor implements ClassProcessor, Opcodes {
 				//to getters/setters by a prev processor, so this'll just catch mods storing Minecraft classes in fields.
 				//Also this time .desc is an actual descriptor
 				else if(insn instanceof FieldInsnNode fieldNode) {
+					fieldNode.owner = mcClassToProxy(fieldNode.owner); //TODO: for writing out forge
 					fieldNode.desc = mcDescToItf(fieldNode.desc);
 				}
 			}

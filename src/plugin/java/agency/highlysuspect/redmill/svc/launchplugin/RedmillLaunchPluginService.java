@@ -11,6 +11,7 @@ import agency.highlysuspect.redmill.svc.transformer.ClassProcessor;
 import agency.highlysuspect.redmill.svc.transformer.FieldsToGettersAndSettersProcessor;
 import agency.highlysuspect.redmill.svc.transformer.McpRemappingClassProcessor;
 import cpw.mods.modlauncher.serviceapi.ILaunchPluginService;
+import net.neoforged.fml.loading.progress.ProgressMeter;
 import net.neoforged.fml.loading.progress.StartupNotificationManager;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -73,32 +74,44 @@ public class RedmillLaunchPluginService implements ILaunchPluginService {
 		
 		//early dump time!!!
 		if(Globals.CFG.earlyDump) {
-			Consts.windowLog("Beginning early dump of {} classes", toBeMilled.size());
-			
-			for(ModFileExt mfe : modFileExts) {
-				try(ZipInputStream zin = new ZipInputStream(Files.newInputStream(mfe.modernModFile.getFilePath()))) {
-					ZipEntry entry;
-					while((entry = zin.getNextEntry()) != null) {
-						if(!entry.isDirectory() && entry.getName().endsWith(".class")) {
-							ClassReader reader = new ClassReader(zin);
-							ClassNode node = new ClassNode();
-							reader.accept(node, 0);
-							String internalName = node.name;
-							
-							try {
-								processor.accept(node);
-								dumpClass(internalName, node);
-							} catch (Exception e) {
-								Consts.LOG.warn(e);
+			new Thread(() -> {
+				ProgressMeter meter = StartupNotificationManager.addProgressBar("(Red Mill) Early dump", toBeMilled.size());
+				
+				Collection<Path> modPaths = modFileExts.stream().map(mfe -> mfe.modernModFile.getFilePath()).toList();
+				
+				//TODO
+				modPaths = new ArrayList<>(modPaths);
+				modPaths.add(Paths.get("./redmill-dump/froge.jar"));
+				
+				for(Path path : modPaths) {
+					try(ZipInputStream zin = new ZipInputStream(Files.newInputStream(path))) {
+						ZipEntry entry;
+						while((entry = zin.getNextEntry()) != null) {
+							if(!entry.isDirectory() && entry.getName().endsWith(".class")) {
+								ClassReader reader = new ClassReader(zin);
+								ClassNode node = new ClassNode();
+								reader.accept(node, 0);
+								
+								String internalName = node.name;
+								meter.label(internalName);
+								
+								try {
+									processor.accept(node);
+									dumpClass(node);
+								} catch (Exception e) {
+									Consts.LOG.warn(e);
+								}
+								
+								meter.increment();
 							}
 						}
+					} catch (Exception e) {
+						Consts.LOG.warn(e);
 					}
-				} catch (Exception e) {
-					Consts.LOG.warn(e);
 				}
-			}
-			
-			Consts.windowLog("Done early dumping");
+				
+				meter.complete();
+			}).start();
 		}
 	}
 	
@@ -121,21 +134,23 @@ public class RedmillLaunchPluginService implements ILaunchPluginService {
 		processor.accept(classNode);
 		
 		if(Globals.CFG.dumpClasses) {
-			dumpClass(classType.getInternalName(), classNode);
+			dumpClass(classNode);
 		}
 		
 		//returns whether COMPUTE_FRAMES is needed... yeah just assume it is
 		return true;
 	}
 	
-	private void dumpClass(String internalName, ClassNode node) {
+	private void dumpClass(ClassNode node) {
 		try {
-			Path dumpDir = Paths.get(".").resolve("redmill-dump");
+			Path dumpDir = Paths.get(".").resolve("redmill-dump").resolve("classes");
 			
-			String name = internalName;
+			String name = node.name;
 			int slash;
 			while((slash = name.indexOf('/')) != -1) {
-				dumpDir = dumpDir.resolve(name.substring(0, slash));
+				String part = name.substring(0, slash);
+				if(part.equals("..")) part = "dotdot"; //nice try
+				dumpDir = dumpDir.resolve(part);
 				name = name.substring(slash + 1);
 			}
 			
@@ -145,7 +160,7 @@ public class RedmillLaunchPluginService implements ILaunchPluginService {
 			node.accept(wow);
 			Files.write(dumpDir.resolve(name + ".class"), wow.toByteArray());
 		} catch (Exception e) {
-			throw Globals.mkRethrow(e, "Failed to dump " + internalName);
+			throw Globals.mkRethrow(e, "Failed to dump " + node.name);
 		}
 	}
 }
