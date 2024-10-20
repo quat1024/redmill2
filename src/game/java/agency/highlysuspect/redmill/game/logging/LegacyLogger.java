@@ -4,7 +4,6 @@ import org.apache.logging.log4j.LogManager;
 
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -82,13 +81,13 @@ public class LegacyLogger extends Logger {
 		return null;
 	}
 	
-	@Override
-	public void setParent(Logger parent) {
+	//@Override
+	public void setParent(LegacyLogger parent) {
 		//We're not gonna support logger hierarchies
 	}
 	
-	@Override
-	public Logger getParent() {
+	//@Override
+	public LegacyLogger getParent() {
 		return null;
 	}
 	
@@ -102,19 +101,19 @@ public class LegacyLogger extends Logger {
 		return false;
 	}
 	
-	public static Logger getLogger(String name) {
-		return LegacyLogManager.getLogManager().getLogger(name);
+	public static LegacyLogger getLogger(String name) {
+		return (LegacyLogger) LegacyLogManager.getLogManager().getLogger(name);
 	}
 	
-	public static Logger getLogger(String name, String resourceBundleName) {
+	public static LegacyLogger getLogger(String name, String resourceBundleName) {
 		return getLogger(name);
 	}
 	
-	public static Logger getLogger(String name, Class<?> callerClass) {
+	public static LegacyLogger getLogger(String name, Class<?> callerClass) {
 		return getLogger(name + " (" + callerClass.getSimpleName() + ")");
 	}
 	
-	public static Logger getLogger(String name, String resourceBundleName, Class<?> callerClass) {
+	public static LegacyLogger getLogger(String name, String resourceBundleName, Class<?> callerClass) {
 		return getLogger(name, callerClass);
 	}
 
