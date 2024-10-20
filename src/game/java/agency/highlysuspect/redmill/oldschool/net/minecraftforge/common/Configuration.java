@@ -8,15 +8,9 @@ package agency.highlysuspect.redmill.oldschool.net.minecraftforge.common;
 import agency.highlysuspect.redmill.oldschool.cpw.mods.fml.common.FMLLog;
 import agency.highlysuspect.redmill.oldschool.net.minecraftforge.common.Property.Type;
 import com.google.common.base.CharMatcher;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
+
+import java.io.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
@@ -355,7 +349,7 @@ public class Configuration {
 	public void load() {
 		if (get_PARENT() == null || get_PARENT() == this) {
 			BufferedReader var1 = null;
-			Configuration$UnicodeInputStreamReader var2 = null;
+			UnicodeInputStreamReader var2 = null;
 			
 			try {
 				if (this.get_file().getParentFile() != null) {
@@ -367,7 +361,7 @@ public class Configuration {
 				}
 				
 				if (this.get_file().canRead()) {
-					var2 = new Configuration$UnicodeInputStreamReader(new FileInputStream(this.get_file()), this.get_defaultEncoding());
+					var2 = new UnicodeInputStreamReader(new FileInputStream(this.get_file()), this.get_defaultEncoding());
 					this.set_defaultEncoding(var2.getEncoding());
 					var1 = new BufferedReader(var2);
 					ConfigCategory var4 = null;
@@ -777,5 +771,64 @@ public class Configuration {
 	
 	public void set_isChild(boolean var1) {
 		this.isChild = var1;
+	}
+	
+	public static class UnicodeInputStreamReader extends Reader {
+		private final InputStreamReader input;
+		private final String defaultEnc;
+		
+		public UnicodeInputStreamReader(InputStream var1, String var2) throws IOException {
+			this.defaultEnc = var2;
+			String var3 = var2;
+			byte[] var4 = new byte[4];
+			PushbackInputStream var5 = new PushbackInputStream(var1, var4.length);
+			int var6 = var5.read(var4, 0, var4.length);
+			byte var7 = 0;
+			int var8 = (var4[0] & 255) << 8 | var4[1] & 255;
+			int var9 = var8 << 8 | var4[2] & 255;
+			int var10 = var9 << 8 | var4[3] & 255;
+			if (var9 == 15711167) {
+				var3 = "UTF-8";
+				var7 = 3;
+			} else if (var8 == 65279) {
+				var3 = "UTF-16BE";
+				var7 = 2;
+			} else if (var8 == 65534) {
+				var3 = "UTF-16LE";
+				var7 = 2;
+			} else if (var10 == 65279) {
+				var3 = "UTF-32BE";
+				var7 = 4;
+			} else if (var10 == -131072) {
+				var3 = "UTF-32LE";
+				var7 = 4;
+			}
+			
+			if (var7 < var6) {
+				var5.unread(var4, var7, var6 - var7);
+			}
+			
+			this.input = new InputStreamReader(var5, var3);
+		}
+		
+		public String getEncoding() {
+			return this.get_input().getEncoding();
+		}
+		
+		public int read(char[] var1, int var2, int var3) throws IOException {
+			return this.get_input().read(var1, var2, var3);
+		}
+		
+		public void close() throws IOException {
+			this.get_input().close();
+		}
+		
+		public InputStreamReader get_input() {
+			return this.input;
+		}
+		
+		public String get_defaultEnc() {
+			return this.defaultEnc;
+		}
 	}
 }
