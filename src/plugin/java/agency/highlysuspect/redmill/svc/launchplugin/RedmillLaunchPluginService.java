@@ -7,6 +7,7 @@ import agency.highlysuspect.redmill.svc.ModFileExt;
 import agency.highlysuspect.redmill.svc.jarmetadata.RedmillJarMetadata;
 import agency.highlysuspect.redmill.svc.languageloader.RedmillModContainer;
 import agency.highlysuspect.redmill.svc.transformer.*;
+import agency.highlysuspect.redmill.svc.transformer.modspecific.AutoThirdPersonProcessor;
 import agency.highlysuspect.redmill.svc.util.StringInterner;
 import cpw.mods.modlauncher.serviceapi.ILaunchPluginService;
 import net.neoforged.fml.loading.progress.ProgressMeter;
@@ -87,7 +88,9 @@ public class RedmillLaunchPluginService implements ILaunchPluginService {
 			new McpClassNamingProcessor(Globals.leftoversSrg),
 		
 			new FieldsToGettersAndSettersProcessor(meta),
-			new ClassHierarchyBenderProcessor()
+			new ClassHierarchyBenderProcessor(),
+			
+			new AutoThirdPersonProcessor()
 		);
 	}
 	
