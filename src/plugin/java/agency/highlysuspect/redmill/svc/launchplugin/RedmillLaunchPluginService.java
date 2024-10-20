@@ -80,9 +80,11 @@ public class RedmillLaunchPluginService implements ILaunchPluginService {
 		RedmillJarMetadata meta = RedmillJarMetadata.composite(jarMetas.stream());
 		
 		return ClassProcessor.composite(
+			//have to do the field/methods first so that the mappings are correct
+			//YEAH its janky!
+			new McpFieldMethodClassProcessor(Globals.minecraft147Srg, meta),
 			new McpClassNamingProcessor(Globals.minecraft147Srg),
 			new McpClassNamingProcessor(Globals.leftoversSrg),
-			new McpFieldMethodClassProcessor(Globals.minecraft147Srg, meta),
 		
 			new FieldsToGettersAndSettersProcessor(meta),
 			new ClassHierarchyBenderProcessor()
