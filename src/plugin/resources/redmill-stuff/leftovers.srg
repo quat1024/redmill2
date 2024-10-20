@@ -7,3 +7,7 @@ CL: ModLoader net/minecraftforge/unpackaged/ModLoader
 CL: ModTextureAnimation net/minecraftforge/unpackaged/ModTextureAnimation
 CL: ModTextureStatic net/minecraftforge/unpackaged/ModTextureStatic
 CL: TradeEntry net/minecraftforge/unpackaged/TradeEntry
+
+# Logger stuff
+CL: java/util/logging/Logger agency/highlysuspect/redmill/game/logging/LegacyLogger
+CL: java/util/logging/LogManager agency/highlysuspect/redmill/game/logging/LegacyLogManager
