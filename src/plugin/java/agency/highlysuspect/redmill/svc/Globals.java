@@ -153,4 +153,8 @@ public class Globals {
 		Consts.LOG.error(e);
 		return e;
 	}
+	
+	public static RuntimeException nyi(String msg) {
+		return new RuntimeException("Not yet implemented: " + msg);
+	}
 }

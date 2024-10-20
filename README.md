@@ -70,6 +70,12 @@ thinking about the preinit/init/postinit system. i forget exactly when they're f
 
 but like, init is only dispatched after all mods received preinit, that sorta thing
 
+### how should it worke
+
+* RedmillBefore will prepare the FMLInjectionData and other stuff in the Loader, but stop short of actually initing the mods
+* When each mod initializes (thru Bastion) i will load the class and dispatch the oldskool construction event
+* After all mods have been constructed RedmillAfter will take care of the preinit/init/postinit/complete phase
+
 ## ?
 
 ~~jar metadata "pre" contains just strings. suitable for reading from a classfile or from a json file.  the non-pre versions are actually linked up to each other. this makes it much easier to, say, climb up a class hierarchy while resolving trueowners. still not sure if this is really needed..?~~ sure wasn't, i made it all strings

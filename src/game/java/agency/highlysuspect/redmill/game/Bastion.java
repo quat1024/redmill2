@@ -1,5 +1,7 @@
 package agency.highlysuspect.redmill.game;
 
+import agency.highlysuspect.redmill.oldschool.cpw.mods.fml.common.Loader;
+import agency.highlysuspect.redmill.oldschool.cpw.mods.fml.common.ModContainer;
 import agency.highlysuspect.redmill.svc.Consts;
 import agency.highlysuspect.redmill.svc.Globals;
 import agency.highlysuspect.redmill.svc.languageloader.RedmillModContainer;
@@ -9,6 +11,7 @@ import agency.highlysuspect.redmill.svc.util.IBastion;
 import net.neoforged.bus.api.IEventBus;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Objects;
@@ -58,7 +61,10 @@ public class Bastion implements IBastion {
 	public void preinitMod(RedmillModContainer rmc) {
 		if(rmc.modInstance == null) return;
 		
-		FMLPreInitializationEvent preinit = new FMLPreInitializationEvent();
+		ModContainer oldschoolModContainer = Loader.instance().omcsByModernModid.get(rmc.modContainerExt.modernModid);
+		
+		FMLPreInitializationEvent preinit = new FMLPreInitializationEvent(null, Loader.instance().getConfigDir());
+		preinit.applyModContainer(oldschoolModContainer);
 		
 		try {
 			for(Method method : rmc.modClass.getMethods()) {

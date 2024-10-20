@@ -33,7 +33,7 @@ public class RedmillEventBus implements SimpleEventBus {
 	
 	@Override
 	public <T extends Event> T post(EventPriority phase, T event) {
-		Consts.LOG.info("post/phase {} {}", phase, event);
+		//Consts.LOG.info("post/phase {} {}", phase, event); //spammy
 		return event;
 	}
 	

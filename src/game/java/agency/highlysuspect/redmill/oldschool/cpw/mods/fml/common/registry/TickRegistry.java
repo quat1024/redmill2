@@ -15,8 +15,8 @@ import java.util.PriorityQueue;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class TickRegistry {
-	private static PriorityQueue clientTickHandlers = Queues.newPriorityQueue();
-	private static PriorityQueue serverTickHandlers = Queues.newPriorityQueue();
+	private static PriorityQueue<TickQueueElement> clientTickHandlers = Queues.newPriorityQueue();
+	private static PriorityQueue<TickQueueElement> serverTickHandlers = Queues.newPriorityQueue();
 	private static AtomicLong clientTickCounter = new AtomicLong();
 	private static AtomicLong serverTickCounter = new AtomicLong();
 	
@@ -27,7 +27,7 @@ public class TickRegistry {
 		getQueue(var1).add(new TickQueueElement(var0, getCounter(var1).get()));
 	}
 	
-	private static PriorityQueue getQueue(Side var0) {
+	private static PriorityQueue<TickQueueElement> getQueue(Side var0) {
 		return var0.isClient() ? clientTickHandlers : serverTickHandlers;
 	}
 	
@@ -39,14 +39,15 @@ public class TickRegistry {
 		registerScheduledTickHandler(new SingleIntervalHandler(var0), var1);
 	}
 	
-	public static void updateTickQueue(List var0, Side var1) {
+	@SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter") //In the original code
+	public static void updateTickQueue(List<IScheduledTickHandler> var0, Side var1) {
 		synchronized(var0) {
 			var0.clear();
 			long var3 = getCounter(var1).incrementAndGet();
-			PriorityQueue var5 = getQueue(var1);
+			PriorityQueue<TickQueueElement> var5 = getQueue(var1);
 			
-			while(var5.size() != 0 && ((TickQueueElement)var5.peek()).scheduledNow(var3)) {
-				TickQueueElement var6 = (TickQueueElement)var5.poll();
+			while(!var5.isEmpty() && var5.peek().scheduledNow(var3)) {
+				TickQueueElement var6 = var5.poll();
 				var6.update(var3);
 				var5.offer(var6);
 				var0.add(var6.get_ticker());
@@ -55,19 +56,19 @@ public class TickRegistry {
 		}
 	}
 	
-	public static PriorityQueue get_clientTickHandlers() {
+	public static PriorityQueue<TickQueueElement> get_clientTickHandlers() {
 		return clientTickHandlers;
 	}
 	
-	public static void set_clientTickHandlers(PriorityQueue var0) {
+	public static void set_clientTickHandlers(PriorityQueue<TickQueueElement> var0) {
 		clientTickHandlers = var0;
 	}
 	
-	public static PriorityQueue get_serverTickHandlers() {
+	public static PriorityQueue<TickQueueElement> get_serverTickHandlers() {
 		return serverTickHandlers;
 	}
 	
-	public static void set_serverTickHandlers(PriorityQueue var0) {
+	public static void set_serverTickHandlers(PriorityQueue<TickQueueElement> var0) {
 		serverTickHandlers = var0;
 	}
 	
