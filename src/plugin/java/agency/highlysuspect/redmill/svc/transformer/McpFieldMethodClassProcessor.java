@@ -6,14 +6,9 @@ import org.objectweb.asm.commons.ClassRemapper;
 import org.objectweb.asm.commons.Remapper;
 import org.objectweb.asm.tree.ClassNode;
 
-public class McpRemappingClassProcessor implements ClassProcessor {
-	public McpRemappingClassProcessor(Srg srg, RedmillJarMetadata meta) {
+public class McpFieldMethodClassProcessor implements ClassProcessor {
+	public McpFieldMethodClassProcessor(Srg srg, RedmillJarMetadata meta) {
 		remapper = new Remapper() {
-			@Override
-			public String map(String internalName) {
-				return srg.classMappings.getOrDefault(internalName, internalName);
-			}
-			
 			@Override
 			public String mapFieldName(String owner, String name, String descriptor) {
 				while(owner != null) {

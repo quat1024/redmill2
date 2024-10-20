@@ -1,0 +1,9 @@
+# Unpackaged things in Forge
+CL: BaseMod net/minecraftforge/unpackaged/BaseMod
+CL: EntityRendererProxy net/minecraftforge/unpackaged/EntityRendererProxy
+CL: FMLRenderAccessLibrary net/minecraftforge/unpackaged/FMLRenderAccessLibrary
+CL: MLProp net/minecraftforge/unpackaged/MLProp
+CL: ModLoader net/minecraftforge/unpackaged/ModLoader
+CL: ModTextureAnimation net/minecraftforge/unpackaged/ModTextureAnimation
+CL: ModTextureStatic net/minecraftforge/unpackaged/ModTextureStatic
+CL: TradeEntry net/minecraftforge/unpackaged/TradeEntry

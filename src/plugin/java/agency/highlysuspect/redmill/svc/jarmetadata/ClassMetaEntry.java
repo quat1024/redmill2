@@ -5,6 +5,7 @@ import agency.highlysuspect.redmill.svc.util.StringInterner;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
 
 import java.util.*;
@@ -14,6 +15,7 @@ public class ClassMetaEntry {
 	public final String name;
 	public final String superclass;
 	public final List<String> superinterfaces;
+	public final boolean isEnum;
 	
 	List<MethodMetaEntry> methods;
 	
@@ -24,6 +26,7 @@ public class ClassMetaEntry {
 		this.methods = node.methods.stream()
 			.map(methodNode -> new MethodMetaEntry(this.name, methodNode, mem))
 			.collect(Collectors.toList());
+		this.isEnum = (node.access & Opcodes.ACC_ENUM) != 0;
 	}
 	
 	public ClassMetaEntry(JsonElement jsonElem, StringInterner mem) {
@@ -43,6 +46,12 @@ public class ClassMetaEntry {
 			.map(JsonElement::getAsJsonObject)
 			.map(obj -> new MethodMetaEntry(this.name, obj, mem))
 			.collect(Collectors.toList());
+		
+		if(json.has("enum")) {
+			this.isEnum = json.getAsJsonPrimitive("enum").getAsBoolean();
+		} else {
+			this.isEnum = false;
+		}
 	}
 	
 	public JsonObject toJson() {
@@ -57,6 +66,9 @@ public class ClassMetaEntry {
 		json.add("methods", methods.stream()
 			.map(MethodMetaEntry::toJson)
 			.collect(Collectors2.toJsonArray()));
+		
+		if(isEnum) json.addProperty("enum", true);
+		
 		return json;
 	}
 	

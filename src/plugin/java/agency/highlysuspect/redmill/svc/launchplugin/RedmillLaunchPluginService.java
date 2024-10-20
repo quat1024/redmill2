@@ -6,10 +6,8 @@ import agency.highlysuspect.redmill.svc.ModContainerExt;
 import agency.highlysuspect.redmill.svc.ModFileExt;
 import agency.highlysuspect.redmill.svc.jarmetadata.RedmillJarMetadata;
 import agency.highlysuspect.redmill.svc.languageloader.RedmillModContainer;
-import agency.highlysuspect.redmill.svc.transformer.ClassHierarchyBenderProcessor;
-import agency.highlysuspect.redmill.svc.transformer.ClassProcessor;
-import agency.highlysuspect.redmill.svc.transformer.FieldsToGettersAndSettersProcessor;
-import agency.highlysuspect.redmill.svc.transformer.McpRemappingClassProcessor;
+import agency.highlysuspect.redmill.svc.transformer.*;
+import agency.highlysuspect.redmill.svc.util.StringInterner;
 import cpw.mods.modlauncher.serviceapi.ILaunchPluginService;
 import net.neoforged.fml.loading.progress.ProgressMeter;
 import net.neoforged.fml.loading.progress.StartupNotificationManager;
@@ -23,9 +21,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
+import java.util.zip.ZipFile;
 
 public class RedmillLaunchPluginService implements ILaunchPluginService {
 	public RedmillLaunchPluginService() {
@@ -59,60 +56,37 @@ public class RedmillLaunchPluginService implements ILaunchPluginService {
 		//list all the classes that need to be milled
 		modFileExts.forEach(mfe -> toBeMilled.addAll(mfe.jarMetadata.getClasses()));
 		
-		//aggregate all jar metadata
-		RedmillJarMetadata compositeMetadata = RedmillJarMetadata.composite(Stream.concat(
-			Stream.of(Globals.minecraft147Meta),
-			modFileExts.stream().map(mfe -> mfe.jarMetadata)
-		));
-		
 		//make our jar processor
-		processor = ClassProcessor.composite(
-			new McpRemappingClassProcessor(Globals.minecraft147Srg, compositeMetadata),
-			new FieldsToGettersAndSettersProcessor(),
-			new ClassHierarchyBenderProcessor()
-		);
+		List<RedmillJarMetadata> meta = new ArrayList<>(modFileExts.size() + 1);
+		meta.add(Globals.minecraft147Meta);
+		modFileExts.forEach(mfe -> meta.add(mfe.jarMetadata));
+		processor = mkProcessor(meta);
 		
 		//early dump time!!!
 		if(Globals.CFG.earlyDump) {
 			new Thread(() -> {
-				ProgressMeter meter = StartupNotificationManager.addProgressBar("(Red Mill) Early dump", toBeMilled.size());
-				
 				Collection<Path> modPaths = modFileExts.stream().map(mfe -> mfe.modernModFile.getFilePath()).toList();
-				
-				//TODO
-				modPaths = new ArrayList<>(modPaths);
-				modPaths.add(Paths.get("./redmill-dump/froge.jar"));
-				
-				for(Path path : modPaths) {
-					try(ZipInputStream zin = new ZipInputStream(Files.newInputStream(path))) {
-						ZipEntry entry;
-						while((entry = zin.getNextEntry()) != null) {
-							if(!entry.isDirectory() && entry.getName().endsWith(".class")) {
-								ClassReader reader = new ClassReader(zin);
-								ClassNode node = new ClassNode();
-								reader.accept(node, 0);
-								
-								String internalName = node.name;
-								meter.label(internalName);
-								
-								try {
-									processor.accept(node);
-									dumpClass(node);
-								} catch (Exception e) {
-									Consts.LOG.warn(e);
-								}
-								
-								meter.increment();
-							}
-						}
-					} catch (Exception e) {
-						Consts.LOG.warn(e);
-					}
+				ProgressMeter meter = StartupNotificationManager.addProgressBar("(Red Mill) Early mod dump", modPaths.size());
+				for(Path mod : modPaths) {
+					processAndDumpJar(mod, processor);
+					meter.increment();
 				}
-				
 				meter.complete();
 			}).start();
 		}
+	}
+	
+	private static ClassProcessor mkProcessor(Collection<RedmillJarMetadata> jarMetas) {
+		RedmillJarMetadata meta = RedmillJarMetadata.composite(jarMetas.stream());
+		
+		return ClassProcessor.composite(
+			new McpClassNamingProcessor(Globals.minecraft147Srg),
+			new McpClassNamingProcessor(Globals.leftoversSrg),
+			new McpFieldMethodClassProcessor(Globals.minecraft147Srg, meta),
+		
+			new FieldsToGettersAndSettersProcessor(meta),
+			new ClassHierarchyBenderProcessor()
+		);
 	}
 	
 	@Override
@@ -141,7 +115,44 @@ public class RedmillLaunchPluginService implements ILaunchPluginService {
 		return true;
 	}
 	
-	private void dumpClass(ClassNode node) {
+	//TODO: for testing
+	public static void processAndDumpJar(Path path, ClassProcessor processor) {
+		ProgressMeter meter = null;
+		
+		try(ZipFile file = new ZipFile(path.toFile())) {
+			//this is an overestimate, since it includes non-class files
+			int count = file.size();
+			
+			meter = StartupNotificationManager.addProgressBar(path.getFileName().toString(), count);
+			
+			for(Iterator<? extends ZipEntry> it = file.entries().asIterator(); it.hasNext(); ) {
+				ZipEntry entry = it.next();
+				
+				if(!entry.isDirectory() && entry.getName().endsWith(".class")) {
+					ClassReader reader = new ClassReader(file.getInputStream(entry));
+					ClassNode node = new ClassNode();
+					reader.accept(node, 0);
+					
+					meter.label("Dumping " + node.name);
+					
+					try {
+						processor.accept(node);
+						dumpClass(node);
+					} catch (Exception e) {
+						Consts.LOG.warn(e);
+					}
+					
+					meter.increment();
+				}
+			}
+		} catch (Exception e) {
+			Consts.LOG.warn(e);
+		} finally {
+			if(meter != null)	meter.complete();
+		}
+	}
+	
+	private static void dumpClass(ClassNode node) {
 		try {
 			Path dumpDir = Paths.get(".").resolve("redmill-dump").resolve("classes");
 			
@@ -162,5 +173,23 @@ public class RedmillLaunchPluginService implements ILaunchPluginService {
 		} catch (Exception e) {
 			throw Globals.mkRethrow(e, "Failed to dump " + node.name);
 		}
+	}
+	
+	public static void processAndDumpFroge() {
+		try {
+			Path froge = Paths.get(".").resolve("redmill-dump").resolve("froge.jar");
+			
+			RedmillJarMetadata rmj = new RedmillJarMetadata(froge, new StringInterner());
+			ClassProcessor processor = mkProcessor(List.of(Globals.minecraft147Meta, rmj));
+			
+			processAndDumpJar(froge, processor);
+		} catch (Throwable e) {
+			throw Globals.mkRethrow(e, "Failed to process and dump froge");
+		}
+	}
+	
+	static {
+		processAndDumpFroge();
+		//System.exit(621);
 	}
 }

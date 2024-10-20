@@ -81,7 +81,7 @@ public class ClassHierarchyBenderProcessor implements ClassProcessor, Opcodes {
 		node.signature = null; //for decompilers (TODO remap it)
 		
 		//TODO just for processing forge.jar thru this...
-		if(ClassProcessor.isForge(node.name)) {
+		if(ClassProcessor.isMinecraftish(node.name)) {
 			node.name = mcClassToProxy(node.name);
 		}
 		
@@ -156,8 +156,9 @@ public class ClassHierarchyBenderProcessor implements ClassProcessor, Opcodes {
 					}
 				}
 				
-				//field accesses and writes. Field accesses into Minecraft have already been rewritten
-				//to getters/setters by a prev processor, so this'll just catch mods storing Minecraft classes in fields.
+				//field accesses and writes. Most field accesses into Minecraft have already been rewritten
+				//to getters/setters by a prev processor, so this is mainly for mods storing Minecraft classes
+				//in their own fields. But this will also catch enum field accesses.
 				//Also this time .desc is an actual descriptor
 				else if(insn instanceof FieldInsnNode fieldNode) {
 					fieldNode.owner = mcClassToProxy(fieldNode.owner); //TODO: for writing out forge

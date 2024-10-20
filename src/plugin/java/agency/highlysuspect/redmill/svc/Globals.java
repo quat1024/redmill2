@@ -5,12 +5,15 @@ import agency.highlysuspect.redmill.svc.languageloader.RedmillModContainer;
 import agency.highlysuspect.redmill.svc.mcp.Members;
 import agency.highlysuspect.redmill.svc.mcp.Srg;
 import agency.highlysuspect.redmill.svc.util.StringInterner;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
 import net.neoforged.fml.loading.progress.StartupNotificationManager;
 import net.neoforged.neoforgespi.language.IModInfo;
 import net.neoforged.neoforgespi.locating.IModFile;
 
 import java.io.InputStream;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -34,6 +37,7 @@ public class Globals {
 	
 	public static RedmillJarMetadata minecraft147Meta;
 	public static Srg minecraft147Srg;
+	public static Srg leftoversSrg;
 	
 	static {
 		StringInterner mem = new StringInterner();
@@ -43,14 +47,22 @@ public class Globals {
 			InputStream fieldsIn = Globals.class.getResourceAsStream("/redmill-stuff/minecraft-1.4.7-fields.csv");
 			InputStream methodsIn = Globals.class.getResourceAsStream("/redmill-stuff/minecraft-1.4.7-methods.csv");
 			InputStream joinedIn = Globals.class.getResourceAsStream("/redmill-stuff/minecraft-1.4.7-joined.srg");
+			InputStream leftoversIn = Globals.class.getResourceAsStream("/redmill-stuff/leftovers.srg")
 		) {
 			Consts.windowLog("Loading metadata/SRG");
 			minecraft147Meta = new RedmillJarMetadata(hierIn, mem);
+			
+			//TODO: testing
+			//minecraft147Meta = new RedmillJarMetadata(Paths.get("./redmill-dump/client.jar"), mem);
+			//minecraft147Meta.resolveAllTrueOwners(minecraft147Meta);
+			//minecraft147Meta.dump(Paths.get("./redmill-dump/minecraft-1.4.7-hier.json"), false);
 			
 			Members fields = new Members().read(fieldsIn, mem);
 			Members methods = new Members().read(methodsIn, mem);
 			Srg srg = new Srg().read(joinedIn, mem);
 			minecraft147Srg = srg.named(fields, methods);
+			
+			leftoversSrg = new Srg().read(leftoversIn, mem);
 			
 			Consts.windowLog("Done loading metadata/SRG");
 		} catch (Exception e) {

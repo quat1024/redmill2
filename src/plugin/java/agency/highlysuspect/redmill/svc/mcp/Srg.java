@@ -37,7 +37,7 @@ public class Srg {
 			while(scanner.hasNextLine()) {
 				lineNo++;
 				String line = scanner.nextLine().trim();
-				if(line.isEmpty()) continue;
+				if(line.isEmpty() || line.startsWith("#")) continue;
 				
 				String[] split = line.split(" ");
 				if(split.length < 2) {

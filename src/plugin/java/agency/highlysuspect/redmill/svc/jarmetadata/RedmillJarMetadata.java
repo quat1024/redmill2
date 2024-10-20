@@ -3,6 +3,7 @@ package agency.highlysuspect.redmill.svc.jarmetadata;
 import agency.highlysuspect.redmill.svc.util.Collectors2;
 import agency.highlysuspect.redmill.svc.util.StringInterner;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import org.jetbrains.annotations.Nullable;
@@ -11,6 +12,7 @@ import org.objectweb.asm.tree.ClassNode;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
@@ -59,6 +61,14 @@ public class RedmillJarMetadata {
 			.collect(Collectors2.toJsonArray());
 	}
 	
+	public void dump(Path where, boolean pretty) throws Exception {
+		GsonBuilder gsonb = new GsonBuilder().disableHtmlEscaping();
+		if(pretty) gsonb.setPrettyPrinting();
+		Gson gson = gsonb.create();
+		String jsoned = gson.toJson(toJson());
+		Files.writeString(where, jsoned);
+	}
+	
 	public Collection<String> getClasses() {
 		return classMeta.keySet();
 	}
@@ -91,7 +101,15 @@ public class RedmillJarMetadata {
 		return cme == null ? null : cme.superclass;
 	}
 	
+	//Has false-negatives
+	public boolean isEnum(String name) {
+		ClassMetaEntry cme = classMeta.get(name);
+		return cme != null && cme.isEnum;
+	}
+	
 	public static RedmillJarMetadata composite(RedmillJarMetadata... others) {
+		if(others.length == 1) return others[0];
+		
 		RedmillJarMetadata result = new RedmillJarMetadata();
 		for(RedmillJarMetadata other : others) result.classMeta.putAll(other.classMeta);
 		return result;
