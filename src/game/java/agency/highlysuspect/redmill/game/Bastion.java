@@ -3,8 +3,8 @@ package agency.highlysuspect.redmill.game;
 import agency.highlysuspect.redmill.svc.Consts;
 import agency.highlysuspect.redmill.svc.Globals;
 import agency.highlysuspect.redmill.svc.languageloader.RedmillModContainer;
-import agency.highlysuspect.redmill.oldschool.cpw.mods.fml.common.RMod;
-import agency.highlysuspect.redmill.oldschool.cpw.mods.fml.common.event.RFMLPreInitializationEvent;
+import agency.highlysuspect.redmill.oldschool.cpw.mods.fml.common.Mod;
+import agency.highlysuspect.redmill.oldschool.cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import agency.highlysuspect.redmill.svc.util.IBastion;
 import net.neoforged.bus.api.IEventBus;
 import org.jetbrains.annotations.Nullable;
@@ -58,11 +58,11 @@ public class Bastion implements IBastion {
 	public void preinitMod(RedmillModContainer rmc) {
 		if(rmc.modInstance == null) return;
 		
-		RFMLPreInitializationEvent preinit = new RFMLPreInitializationEvent();
+		FMLPreInitializationEvent preinit = new FMLPreInitializationEvent();
 		
 		try {
 			for(Method method : rmc.modClass.getMethods()) {
-				Object preInit = method.getAnnotation(RMod.RPreInit.class);
+				Object preInit = method.getAnnotation(Mod.PreInit.class);
 				if(preInit != null) {
 					Consts.LOG.debug("Found @RPreInit method {}", method);
 					if(Modifier.isStatic(method.getModifiers())) {

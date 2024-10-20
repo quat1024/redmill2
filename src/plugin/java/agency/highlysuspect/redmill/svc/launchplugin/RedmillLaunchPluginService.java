@@ -64,7 +64,7 @@ public class RedmillLaunchPluginService implements ILaunchPluginService {
 		
 		//early dump time!!!
 		if(Globals.CFG.earlyDump) {
-			new Thread(() -> {
+			//new Thread(() -> {
 				Collection<Path> modPaths = modFileExts.stream().map(mfe -> mfe.modernModFile.getFilePath()).toList();
 				ProgressMeter meter = StartupNotificationManager.addProgressBar("(Red Mill) Early mod dump", modPaths.size());
 				for(Path mod : modPaths) {
@@ -72,7 +72,7 @@ public class RedmillLaunchPluginService implements ILaunchPluginService {
 					meter.increment();
 				}
 				meter.complete();
-			}).start();
+			//}).start();
 		}
 	}
 	
@@ -176,16 +176,20 @@ public class RedmillLaunchPluginService implements ILaunchPluginService {
 	}
 	
 	public static void processAndDumpFroge() {
-		try {
-			Path froge = Paths.get(".").resolve("redmill-dump").resolve("froge.jar");
-			
-			RedmillJarMetadata rmj = new RedmillJarMetadata(froge, new StringInterner());
-			ClassProcessor processor = mkProcessor(List.of(Globals.minecraft147Meta, rmj));
-			
-			processAndDumpJar(froge, processor);
-		} catch (Throwable e) {
-			throw Globals.mkRethrow(e, "Failed to process and dump froge");
-		}
+		new Thread(() -> {
+			try {
+				Path froge = Paths.get(".").resolve("redmill-dump").resolve("froge.jar");
+				Path client = Paths.get(".").resolve("redmill-dump").resolve("client.jar");
+				
+				RedmillJarMetadata rmj = new RedmillJarMetadata(froge, new StringInterner());
+				ClassProcessor processor = mkProcessor(List.of(Globals.minecraft147Meta, rmj));
+				
+				processAndDumpJar(froge, processor);
+				//processAndDumpJar(client, processor);
+			} catch (Throwable e) {
+				throw Globals.mkRethrow(e, "Failed to process and dump froge");
+			}
+		}).start();
 	}
 	
 	static {

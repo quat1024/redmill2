@@ -5,18 +5,14 @@ import agency.highlysuspect.redmill.svc.languageloader.RedmillModContainer;
 import agency.highlysuspect.redmill.svc.mcp.Members;
 import agency.highlysuspect.redmill.svc.mcp.Srg;
 import agency.highlysuspect.redmill.svc.util.StringInterner;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import net.neoforged.fml.loading.progress.StartupNotificationManager;
 import net.neoforged.neoforgespi.language.IModInfo;
 import net.neoforged.neoforgespi.locating.IModFile;
 
 import java.io.InputStream;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Collection;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
 
 public class Globals {
 	
@@ -39,6 +35,9 @@ public class Globals {
 	public static Srg minecraft147Srg;
 	public static Srg leftoversSrg;
 	
+	public static List<Pattern> dontsplitPositive = new ArrayList<>();
+	public static List<Pattern> dontsplitNegative = new ArrayList<>();
+	
 	static {
 		StringInterner mem = new StringInterner();
 		
@@ -47,7 +46,8 @@ public class Globals {
 			InputStream fieldsIn = Globals.class.getResourceAsStream("/redmill-stuff/minecraft-1.4.7-fields.csv");
 			InputStream methodsIn = Globals.class.getResourceAsStream("/redmill-stuff/minecraft-1.4.7-methods.csv");
 			InputStream joinedIn = Globals.class.getResourceAsStream("/redmill-stuff/minecraft-1.4.7-joined.srg");
-			InputStream leftoversIn = Globals.class.getResourceAsStream("/redmill-stuff/leftovers.srg")
+			InputStream leftoversIn = Globals.class.getResourceAsStream("/redmill-stuff/leftovers.srg");
+			InputStream dontsplitIn = Globals.class.getResourceAsStream("/redmill-stuff/dontsplit.txt");
 		) {
 			Consts.windowLog("Loading metadata/SRG");
 			minecraft147Meta = new RedmillJarMetadata(hierIn, mem);
@@ -63,6 +63,16 @@ public class Globals {
 			minecraft147Srg = srg.named(fields, methods);
 			
 			leftoversSrg = new Srg().read(leftoversIn, mem);
+			
+			//dontsplit
+			Scanner foo = new Scanner(Objects.requireNonNull(dontsplitIn));
+			while(foo.hasNextLine()) {
+				String line = foo.nextLine().trim();
+				if(line.isEmpty() || line.startsWith("#")) continue;
+				
+				if(line.startsWith("!")) dontsplitNegative.add(Pattern.compile(line.substring(1)));
+				else dontsplitPositive.add(Pattern.compile(line));
+			}
 			
 			Consts.windowLog("Done loading metadata/SRG");
 		} catch (Exception e) {

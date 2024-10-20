@@ -1,15 +1,14 @@
 package agency.highlysuspect.redmill.oldschool.cpw.mods.fml.common.event;
 
-import agency.highlysuspect.redmill.oldschool.cpw.mods.fml.relauncher.ISide;
-import agency.highlysuspect.redmill.oldschool.cpw.mods.fml.relauncher.RSide;
+import agency.highlysuspect.redmill.oldschool.cpw.mods.fml.relauncher.Side;
 import net.neoforged.fml.loading.FMLEnvironment;
 
 import java.io.File;
 import java.nio.file.Paths;
 
-public class RFMLPreInitializationEvent implements IFMLPreInitializationEvent {
-	public ISide getSide() {
-		return RSide.redmill$fromModern(FMLEnvironment.dist);
+public class FMLPreInitializationEvent {
+	public Side getSide() {
+		return Side.redmill$fromModern(FMLEnvironment.dist);
 	}
 	
 	public File getSuggestedConfigurationFile() {

@@ -12,14 +12,13 @@ import java.util.logging.Formatter;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
-final class RFMLLogFormatter extends Formatter implements IFMLLogFormatter {
+final class FMLLogFormatter extends Formatter {
 	static final String LINE_SEPARATOR = System.getProperty("line.separator");
 	private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	
-	RFMLLogFormatter() {
+	FMLLogFormatter() {
 	}
 	
-	@Override
 	public String format(LogRecord var1) {
 		StringBuilder var2 = new StringBuilder();
 		var2.append(this.get_dateFormat().format(var1.getMillis()));
@@ -42,7 +41,7 @@ final class RFMLLogFormatter extends Formatter implements IFMLLogFormatter {
 		}
 		
 		var2.append(var1.getMessage());
-		var2.append(LINE_SEPARATOR);
+		var2.append(get_LINE_SEPARATOR());
 		Throwable var5 = var1.getThrown();
 		if (var5 != null) {
 			StringWriter var6 = new StringWriter();
@@ -53,12 +52,14 @@ final class RFMLLogFormatter extends Formatter implements IFMLLogFormatter {
 		return var2.toString();
 	}
 	
-	@Override
+	public static String get_LINE_SEPARATOR() {
+		return LINE_SEPARATOR;
+	}
+	
 	public SimpleDateFormat get_dateFormat() {
 		return this.dateFormat;
 	}
 	
-	@Override
 	public void set_dateFormat(SimpleDateFormat var1) {
 		this.dateFormat = var1;
 	}

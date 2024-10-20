@@ -1,12 +1,14 @@
 package agency.highlysuspect.redmill.svc.transformer;
 
+import agency.highlysuspect.redmill.svc.Globals;
 import agency.highlysuspect.redmill.svc.mcp.DescriptorMapper;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
 
-import java.util.Collection;
+import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * Ok, so, in the model, all classes from Minecraft and Forge are split into an oldschool interface
@@ -26,6 +28,23 @@ import java.util.Collection;
  * - Annotations are rewritten to the implementation
  */
 public class ClassHierarchyBenderProcessor implements ClassProcessor, Opcodes {
+	//TODO: SLOWWWWWWWWWWWWWw and also should probably be an argument
+	private boolean doNotSplit(String internalName) {
+		for(Pattern pattern : Globals.dontsplitPositive) {
+			if(pattern.matcher(internalName).find()) {
+				
+				for(Pattern pattern2: Globals.dontsplitNegative) {
+					if(pattern2.matcher(internalName).find()) {
+						return false;
+					}
+				}
+				
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	//Foo$Bar -> IFoo$IBar
 	private static String prefix2(String s, String prefix) {
 		return prefix + s.replace("$", "$" + prefix);
@@ -42,38 +61,45 @@ public class ClassHierarchyBenderProcessor implements ClassProcessor, Opcodes {
 	}
 	
 	//rewrites a class internal name to the INTERFACE
-	private static String classToItf(String internalName) {
-		return "agency/highlysuspect/redmill/oldschool/" + prefix(internalName, "I");
+	private String classToItf(String internalName) {
+		if(doNotSplit(internalName)) return justRepackage(internalName);
+		else return "agency/highlysuspect/redmill/oldschool/" + prefix(internalName, "I");
 	}
 	
 	//rewrites a class internal name, IF it belongs to minecraft, to the INTERFACE
-	private static String mcClassToItf(String internalName) {
+	private String mcClassToItf(String internalName) {
 		return ClassProcessor.isMinecraftish(internalName) ? classToItf(internalName) : internalName;
 	}
 	
 	//rewrites all classes found in a descriptor that belong to minecraft to the INTERFACE
-	private static String mcDescToItf(String desc) {
-		return DescriptorMapper.map(desc, ClassHierarchyBenderProcessor::mcClassToItf);
+	private String mcDescToItf(String desc) {
+		return DescriptorMapper.map(desc, this::mcClassToItf);
 	}
 	
 	//rewrites a class internal name to the PROXY
-	private static String classToProxy(String internalName) {
-		return "agency/highlysuspect/redmill/oldschool/" + prefix(internalName, "R");
+	private String classToProxy(String internalName) {
+		if(doNotSplit(internalName)) return justRepackage(internalName);
+		else return "agency/highlysuspect/redmill/oldschool/" + prefix(internalName, "R");
 	}
 	
 	//rewrites a class internal name, IF it belongs to minecraft, to the PROXY
-	private static String mcClassToProxy(String internalName) {
+	private String mcClassToProxy(String internalName) {
 		return ClassProcessor.isMinecraftish(internalName) ? classToProxy(internalName) : internalName;
 	}
 	
 	//rewrites all classes found in a descriptor that belong to minecraft to the PROXY
-	private static String mcDescToProxy(String desc) {
-		return DescriptorMapper.map(desc, ClassHierarchyBenderProcessor::mcClassToProxy);
+	private String mcDescToProxy(String desc) {
+		return DescriptorMapper.map(desc, this::mcClassToProxy);
 	}
 	
 	//similar for annotations; in asm the annotation list is usually null if there are no annotations
-	private static void mcAnnotationsToProxy(@Nullable Collection<AnnotationNode> annotations) {
+	private void mcAnnotationsToProxy(@Nullable Collection<AnnotationNode> annotations) {
 		if(annotations != null) annotations.forEach(a -> a.desc = mcDescToProxy(a.desc));
+	}
+	
+	//for dontsplit
+	private String justRepackage(String internalName)  {
+		return "agency/highlysuspect/redmill/oldschool/" + internalName;
 	}
 	
 	@Override
@@ -93,7 +119,7 @@ public class ClassHierarchyBenderProcessor implements ClassProcessor, Opcodes {
 		mcAnnotationsToProxy(node.invisibleAnnotations);
 		
 		//rewrite implements
-		node.interfaces.replaceAll(ClassHierarchyBenderProcessor::mcClassToItf);
+		node.interfaces.replaceAll(this::mcClassToItf);
 		
 		for(FieldNode field : node.fields) {
 			//clear some decompiler gunk (TODO remap it? lol)
@@ -148,9 +174,11 @@ public class ClassHierarchyBenderProcessor implements ClassProcessor, Opcodes {
 								methodNode.owner = classToProxy(methodNode.owner);
 							}
 							case INVOKEVIRTUAL, INVOKEINTERFACE -> {
+								if(!doNotSplit(methodNode.owner)) {
+									methodNode.setOpcode(INVOKEINTERFACE);
+									methodNode.itf = true;
+								}
 								methodNode.owner = classToItf(methodNode.owner);
-								methodNode.setOpcode(INVOKEINTERFACE);
-								methodNode.itf = true;
 							}
 						}
 					}

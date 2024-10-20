@@ -7,26 +7,26 @@ package agency.highlysuspect.redmill.oldschool.net.minecraftforge.common;
 
 import java.util.ArrayList;
 
-public class RProperty implements IProperty {
+public class Property {
 	private String name;
 	public String value;
 	public String comment;
 	public String[] valueList;
 	private final boolean wasRead;
 	private final boolean isList;
-	private final IProperty.IType type;
+	private final Type type;
 	
-	public RProperty() {
+	public Property() {
 		this.wasRead = false;
 		this.type = null;
 		this.isList = false;
 	}
 	
-	public RProperty(String var1, String var2, IProperty.IType var3) {
+	public Property(String var1, String var2, Type var3) {
 		this(var1, var2, var3, false);
 	}
 	
-	RProperty(String var1, String var2, IProperty.IType var3, boolean var4) {
+	Property(String var1, String var2, Type var3, boolean var4) {
 		this.setName(var1);
 		this.value = var2;
 		this.type = var3;
@@ -34,11 +34,11 @@ public class RProperty implements IProperty {
 		this.isList = false;
 	}
 	
-	public RProperty(String var1, String[] var2, IProperty.IType var3) {
+	public Property(String var1, String[] var2, Type var3) {
 		this(var1, var2, var3, false);
 	}
 	
-	RProperty(String var1, String[] var2, IProperty.IType var3, boolean var4) {
+	Property(String var1, String[] var2, Type var3, boolean var4) {
 		this.setName(var1);
 		this.type = var3;
 		this.valueList = var2;
@@ -46,12 +46,10 @@ public class RProperty implements IProperty {
 		this.isList = true;
 	}
 	
-	@Override
 	public int getInt() {
 		return this.getInt(-1);
 	}
 	
-	@Override
 	public int getInt(int var1) {
 		try {
 			return Integer.parseInt(this.get_value());
@@ -60,7 +58,6 @@ public class RProperty implements IProperty {
 		}
 	}
 	
-	@Override
 	public boolean isIntValue() {
 		try {
 			Integer.parseInt(this.get_value());
@@ -70,17 +67,14 @@ public class RProperty implements IProperty {
 		}
 	}
 	
-	@Override
 	public boolean getBoolean(boolean var1) {
 		return this.isBooleanValue() ? Boolean.parseBoolean(this.get_value()) : var1;
 	}
 	
-	@Override
 	public boolean isBooleanValue() {
 		return "true".equals(this.get_value().toLowerCase()) || "false".equals(this.get_value().toLowerCase());
 	}
 	
-	@Override
 	public boolean isDoubleValue() {
 		try {
 			Double.parseDouble(this.get_value());
@@ -90,7 +84,6 @@ public class RProperty implements IProperty {
 		}
 	}
 	
-	@Override
 	public double getDouble(double var1) {
 		try {
 			return Double.parseDouble(this.get_value());
@@ -99,7 +92,6 @@ public class RProperty implements IProperty {
 		}
 	}
 	
-	@Override
 	public int[] getIntList() {
 		ArrayList var1 = new ArrayList();
 		String[] var2 = this.get_valueList();
@@ -123,7 +115,6 @@ public class RProperty implements IProperty {
 		return var8;
 	}
 	
-	@Override
 	public boolean isIntList() {
 		String[] var1 = this.get_valueList();
 		int var2 = var1.length;
@@ -141,7 +132,6 @@ public class RProperty implements IProperty {
 		return true;
 	}
 	
-	@Override
 	public boolean[] getBooleanList() {
 		ArrayList var1 = new ArrayList();
 		String[] var2 = this.get_valueList();
@@ -165,7 +155,6 @@ public class RProperty implements IProperty {
 		return var8;
 	}
 	
-	@Override
 	public boolean isBooleanList() {
 		String[] var1 = this.get_valueList();
 		int var2 = var1.length;
@@ -180,7 +169,6 @@ public class RProperty implements IProperty {
 		return true;
 	}
 	
-	@Override
 	public double[] getDoubleList() {
 		ArrayList var1 = new ArrayList();
 		String[] var2 = this.get_valueList();
@@ -204,7 +192,6 @@ public class RProperty implements IProperty {
 		return var8;
 	}
 	
-	@Override
 	public boolean isDoubleList() {
 		String[] var1 = this.get_valueList();
 		int var2 = var1.length;
@@ -222,98 +209,85 @@ public class RProperty implements IProperty {
 		return true;
 	}
 	
-	@Override
 	public String getName() {
 		return this.get_name();
 	}
 	
-	@Override
 	public void setName(String var1) {
 		this.set_name(var1);
 	}
 	
-	@Override
 	public boolean wasRead() {
 		return this.get_wasRead();
 	}
 	
-	@Override
-	public IProperty.IType getType() {
+	public Type getType() {
 		return this.get_type();
 	}
 	
-	@Override
 	public boolean isList() {
 		return this.get_isList();
 	}
 	
-	@Override
 	public String get_name() {
 		return this.name;
 	}
 	
-	@Override
 	public void set_name(String var1) {
 		this.name = var1;
 	}
 	
-	@Override
 	public String get_value() {
 		return this.value;
 	}
 	
-	@Override
 	public void set_value(String var1) {
 		this.value = var1;
 	}
 	
-	@Override
 	public String get_comment() {
 		return this.comment;
 	}
 	
-	@Override
 	public void set_comment(String var1) {
 		this.comment = var1;
 	}
 	
-	@Override
 	public String[] get_valueList() {
 		return this.valueList;
 	}
 	
-	@Override
 	public void set_valueList(String[] var1) {
 		this.valueList = var1;
 	}
 	
-	@Override
 	public boolean get_wasRead() {
 		return this.wasRead;
 	}
 	
-	@Override
 	public boolean get_isList() {
 		return this.isList;
 	}
 	
-	@Override
-	public IProperty.IType get_type() {
+	public Type get_type() {
 		return this.type;
 	}
 	
-	public enum RType implements IProperty.IType {
+	public enum Type {
 		STRING,
 		INTEGER,
 		BOOLEAN,
 		DOUBLE;
 		
-		public static final RType[] values = values();
+		private static Type[] values = values();
 		
-		public static IProperty.IType tryParse(char var0) {
-			for(RType rType : values) {
-				if(rType.getID() == var0) {
-					return rType;
+		private Type() {
+		}
+		
+		public static Type tryParse(char var0) {
+			for(int var1 = 0; var1 < values.length; ++var1) {
+				if (values[var1].getID() == var0) {
+					return values[var1];
 				}
 			}
 			
@@ -324,20 +298,28 @@ public class RProperty implements IProperty {
 			return this.name().charAt(0);
 		}
 		
-		public static IProperty.IType get_STRING() {
+		public static Type get_STRING() {
 			return STRING;
 		}
 		
-		public static IProperty.IType get_INTEGER() {
+		public static Type get_INTEGER() {
 			return INTEGER;
 		}
 		
-		public static IProperty.IType get_BOOLEAN() {
+		public static Type get_BOOLEAN() {
 			return BOOLEAN;
 		}
 		
-		public static IProperty.IType get_DOUBLE() {
+		public static Type get_DOUBLE() {
 			return DOUBLE;
+		}
+		
+		public static Type[] get_values() {
+			return values;
+		}
+		
+		public static void set_values(Type[] var0) {
+			values = var0;
 		}
 	}
 }
