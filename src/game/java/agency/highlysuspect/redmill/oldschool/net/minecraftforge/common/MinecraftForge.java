@@ -5,14 +5,13 @@
 
 package agency.highlysuspect.redmill.oldschool.net.minecraftforge.common;
 
+import agency.highlysuspect.redmill.game.RedmillNeoforgeEventBus;
 import agency.highlysuspect.redmill.oldschool.cpw.mods.fml.common.FMLLog;
-import agency.highlysuspect.redmill.oldschool.net.minecraftforge.event.IEventBus;
-import agency.highlysuspect.redmill.oldschool.net.minecraftforge.event.REventBus;
 
 public class MinecraftForge {
-	public static final IEventBus EVENT_BUS = new REventBus();
-	public static final IEventBus TERRAIN_GEN_BUS = new REventBus();
-	public static final IEventBus ORE_GEN_BUS = new REventBus();
+	public static final RedmillNeoforgeEventBus EVENT_BUS = new RedmillNeoforgeEventBus();
+	public static final RedmillNeoforgeEventBus TERRAIN_GEN_BUS = new RedmillNeoforgeEventBus();
+	public static final RedmillNeoforgeEventBus ORE_GEN_BUS = new RedmillNeoforgeEventBus();
 	///** @deprecated */
 	//@Deprecated
 	public static boolean SPAWNER_ALLOW_ON_INVERTED = false;
@@ -93,15 +92,15 @@ public class MinecraftForge {
 		return "Minecraft Forge " + ForgeVersion.getVersion();
 	}
 	
-	public static IEventBus get_EVENT_BUS() {
+	public static RedmillNeoforgeEventBus get_EVENT_BUS() {
 		return EVENT_BUS;
 	}
 	
-	public static IEventBus get_TERRAIN_GEN_BUS() {
+	public static RedmillNeoforgeEventBus get_TERRAIN_GEN_BUS() {
 		return TERRAIN_GEN_BUS;
 	}
 	
-	public static IEventBus get_ORE_GEN_BUS() {
+	public static RedmillNeoforgeEventBus get_ORE_GEN_BUS() {
 		return ORE_GEN_BUS;
 	}
 	

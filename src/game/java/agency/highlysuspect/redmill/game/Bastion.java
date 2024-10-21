@@ -4,8 +4,6 @@ import agency.highlysuspect.redmill.svc.Consts;
 import agency.highlysuspect.redmill.svc.util.IBastion;
 import net.neoforged.bus.api.IEventBus;
 
-import java.util.Objects;
-
 /**
  * TODO I don't actually think we need this
  */
@@ -20,7 +18,7 @@ public class Bastion implements IBastion {
 	@SuppressWarnings("unused") //reflectively accessed
 	public static final IBastion INSTANCE = new Bastion();
 	
-	public final IEventBus EVENT_BUS = new RedmillEventBus();
+	public final IEventBus EVENT_BUS = new RedmillNeoforgeEventBus();
 	
 	@Override
 	public IEventBus getEventBus() {

@@ -11,3 +11,8 @@ CL: TradeEntry net/minecraftforge/unpackaged/TradeEntry
 # Logger stuff
 CL: java/util/logging/Logger agency/highlysuspect/redmill/game/logging/LegacyLogger
 CL: java/util/logging/LogManager agency/highlysuspect/redmill/game/logging/LegacyLogManager
+
+# Some of the smaller EventBus stuff actually lines up pretty close
+CL: net/minecraftforge/event/ForgeSubscribe net/neoforged/bus/api/SubscribeEvent
+CL: net/minecraftforge/event/EventPriority net/neoforged/bus/api/EventPriority
+CL: net/minecraftforge/event/EventBus agency/highlysuspect/redmill/game/RedmillNeoforgeEventBus

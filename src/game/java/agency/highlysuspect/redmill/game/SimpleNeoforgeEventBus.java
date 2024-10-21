@@ -15,7 +15,7 @@ import java.util.function.Predicate;
 /**
  * Copypasta of the NeoForge EventBus methods I didn't need to override
  */
-public interface SimpleEventBus extends IEventBus {
+public interface SimpleNeoforgeEventBus extends IEventBus {
 	<T extends Event> void addListener(final EventPriority priority, @Nullable Predicate<? super T> filter, final Class<T> eventClass, final Consumer<T> consumer);
 	
 	default <T extends Event> void addListener(final EventPriority priority, @Nullable Predicate<? super T> filter, final Consumer<T> consumer) {

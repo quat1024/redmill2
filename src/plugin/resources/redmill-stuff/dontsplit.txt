@@ -1,5 +1,2 @@
 cpw/mods/fml/.*
 net/minecraftforge/.*
-
-# DO split the event bus
-!net/minecraftforge/event/EventBus
