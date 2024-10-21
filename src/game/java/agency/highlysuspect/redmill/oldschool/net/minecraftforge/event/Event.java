@@ -5,8 +5,10 @@
 
 package agency.highlysuspect.redmill.oldschool.net.minecraftforge.event;
 
-public class Event {
-	private boolean isCanceled = false;
+import net.neoforged.bus.api.ICancellableEvent;
+
+public abstract class Event extends net.neoforged.bus.api.Event {
+	//private boolean isCanceled = false;
 	private final boolean isCancelable;
 	private Result result;
 	private final boolean hasResult;
@@ -15,10 +17,9 @@ public class Event {
 	public Event() {
 		this.result = Result.DEFAULT;
 		this.setup();
-//		this.isCancelable = this.hasAnnotation(Cancelable.class);
+		this.isCancelable = this instanceof ICancellableEvent;
 //		this.hasResult = this.hasAnnotation(HasResult.class);
-		this.isCancelable = false; //TODO
-		this.hasResult = false;
+		this.hasResult = false; //RM-TODO
 	}
 	
 	private boolean hasAnnotation(Class var1) {
@@ -67,11 +68,17 @@ public class Event {
 //	}
 	
 	public boolean get_isCanceled() {
-		return this.isCanceled;
+		if(this instanceof ICancellableEvent ice) {
+			return ice.isCanceled();
+		} else {
+			return false;
+		}
 	}
 	
 	public void set_isCanceled(boolean var1) {
-		this.isCanceled = var1;
+		if(this instanceof ICancellableEvent ice) {
+			ice.setCanceled(var1);
+		}
 	}
 	
 	public boolean get_isCancelable() {

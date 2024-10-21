@@ -29,8 +29,8 @@ import java.util.logging.Level;
 public class FMLCommonHandler {
 	private static final FMLCommonHandler INSTANCE = new FMLCommonHandler();
 	private IFMLSidedHandler sidedDelegate;
-	private List scheduledClientTicks = Lists.newArrayList();
-	private List scheduledServerTicks = Lists.newArrayList();
+	private List<IScheduledTickHandler> scheduledClientTicks = Lists.newArrayList();
+	private List<IScheduledTickHandler> scheduledServerTicks = Lists.newArrayList();
 	private Class<MinecraftForge> forge;
 	private boolean noForge;
 	private List brandings;
@@ -53,7 +53,7 @@ public class FMLCommonHandler {
 	}
 	
 	public void tickStart(EnumSet<TickType> var1, Side var2, Object... var3) {
-		List var4 = var2.isClient() ? this.get_scheduledClientTicks() : this.get_scheduledServerTicks();
+		List<IScheduledTickHandler> var4 = var2.isClient() ? this.get_scheduledClientTicks() : this.get_scheduledServerTicks();
 		if (var4.size() != 0) {
 			Iterator var5 = var4.iterator();
 			
@@ -360,19 +360,19 @@ public class FMLCommonHandler {
 		this.sidedDelegate = var1;
 	}
 	
-	public List get_scheduledClientTicks() {
+	public List<IScheduledTickHandler> get_scheduledClientTicks() {
 		return this.scheduledClientTicks;
 	}
 	
-	public void set_scheduledClientTicks(List var1) {
+	public void set_scheduledClientTicks(List<IScheduledTickHandler> var1) {
 		this.scheduledClientTicks = var1;
 	}
 	
-	public List get_scheduledServerTicks() {
+	public List<IScheduledTickHandler> get_scheduledServerTicks() {
 		return this.scheduledServerTicks;
 	}
 	
-	public void set_scheduledServerTicks(List var1) {
+	public void set_scheduledServerTicks(List<IScheduledTickHandler> var1) {
 		this.scheduledServerTicks = var1;
 	}
 	
