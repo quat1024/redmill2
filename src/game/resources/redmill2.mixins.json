@@ -4,9 +4,15 @@
 	"package": "agency.highlysuspect.redmill.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"mixins": [
+		"AnimalMixin",
+		"BoatMixin",
+		"EntityMixin",
+		"MapColorMixin",
+		"MinecartMixin"
 	],
 	"client": [
 		"client.ClientLevelMixin",
+		"client.LocalPlayerMixin",
 		"client.MinecraftMixin",
 		"client.OptionsMixin"
 	],

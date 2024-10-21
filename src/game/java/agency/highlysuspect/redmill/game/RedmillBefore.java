@@ -7,17 +7,20 @@ import agency.highlysuspect.redmill.oldschool.cpw.mods.fml.common.TickType;
 import agency.highlysuspect.redmill.oldschool.cpw.mods.fml.relauncher.FMLInjectionData;
 import agency.highlysuspect.redmill.oldschool.cpw.mods.fml.relauncher.Side;
 import agency.highlysuspect.redmill.oldschool.net.minecraft.client.RMinecraft;
+import agency.highlysuspect.redmill.oldschool.net.minecraftforge.common.ForgeVersion;
 import agency.highlysuspect.redmill.oldschool.net.minecraftforge.common.MinecraftForge;
 import agency.highlysuspect.redmill.oldschool.net.minecraftforge.event.world.WorldEvent;
 import agency.highlysuspect.redmill.svc.Consts;
 import agency.highlysuspect.redmill.svc.Globals;
 import agency.highlysuspect.redmill.svc.ModContainerExt;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.CustomizeGuiOverlayEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.level.LevelEvent;
 
@@ -68,6 +71,17 @@ public class RedmillBefore {
 	public static class Client {
 		public Client() {
 			NeoForge.EVENT_BUS.register(this);
+		}
+		
+		private static final String FORGE_F3 = "(Red Mill) Forge "
+			+ ChatFormatting.LIGHT_PURPLE
+			+ ForgeVersion.getVersion()
+			+ ChatFormatting.RESET
+			+ "/1.4.7"; //lol hardcoded
+		
+		@SubscribeEvent
+		public void f3(CustomizeGuiOverlayEvent.DebugText e) {
+			e.getRight().add(FORGE_F3);
 		}
 		
 		@SubscribeEvent

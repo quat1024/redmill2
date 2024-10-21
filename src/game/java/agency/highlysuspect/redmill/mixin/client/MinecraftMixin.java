@@ -30,7 +30,7 @@ public class MinecraftMixin implements IMinecraft {
 	
 	@Override
 	public IEntityClientPlayerMP get_thePlayer() {
-		return null; //RM-TODO
+		return (IEntityClientPlayerMP) instance.player;
 	}
 	
 	@Override
