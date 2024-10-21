@@ -4,18 +4,43 @@ i tried this before last modfest but didn't finish. redmill 1's code is private 
 
 ## credits
 
-obviously contains lots of code adapted from FML and Minecraft Forge, which are both LGPL-2.1-or-later.
+`agency.highlysuspect.redmill.oldschool.cpw` obviously contains code adapted from FML, and `agency.highlysuspect.redmill.oldschool.net.minecraftforge` obviously contains code adapted from Minecraft Forge, which are both LGPL-2.1-or-later.
 
-`agency.highlysuspect.redmill.svc.mcp.*` contains code from Voldeloom. voldeloom itself is MIT, but I wrote all the mcp classes in that project by myself so i hold the copyright anyway.
+(however the code under `...net.minecraft.*` is... 💀)
+
+`agency.highlysuspect.redmill.svc.mcp.*` contains code from Voldeloom. voldeloom itself is MIT, but I wrote all the mcp classes in that project by myself so i hold the copyright.
 
 ## todo
 
 * my fucked up and evil jarjar isn't working
   * the -game jar isn't loaded in prod, neoforge isn't even picking up on the jarjar
-  * you can just install both the regular jar and the game jar so it's not such a big deal
+  * you can just install both the regular jar and the game jar so it's not a huuuuge deal
 * i'd like to make minecraft-1.4.7-hier.json with datagen
+  * and some of the other data files mayb
 
 # notes
+
+the process:
+
+* first remap according to srg (fields/methods first, then classes, just so we have the correct "owner" information when remapping the fields)
+* apply some classname fixups (leftovers.srg; mainly bringing some forge classes out of the root package, replacing java.util.logging with a Log4j-based shim, remapping select Forge classes into NeoForge ones where they haven't changed)
+* rewrite field reads/writes to getter/setter calls! this is done on every class (TODO: probably shouldn't apply to some forge stuff)
+* "class hierarchy bending" (for lack of a better term). basically i introduce an "api/implementation split" into nearly every class from minecraft
+  * `dontbend.txt` contains regexes for classes not to do this split on
+  * which, atm, is just "all of forge", so uh, maybe regex is a little too much power
+  * this is also where the `agency/highlysuspect/redmill/game/oldschool/` repackaging is applied
+  * humm, i should do that somewhere else, maybe
+* finally some cheeky mod specific patches
+  * currently this patches Auto Third Person to disable the "emulate sneak-to-dismount" and the "fix misplaced first-person hand" code, because of course it is not relevant anymore (and it won't work)
+
+the dev workflow:
+
+* i have some debug code that runs forge.jar itself thru this pipeline (plucked from my voldeloom cache, so it also contains vanilla minecraft)
+* when i need to port a new class i open the compiled class in intellij (just for convenience's sake) and copypaste the decompiled code into a new java file
+* cue lots and lots and lots of manual fixups, commenting out things that aren't ready yet, sometimes reimplementing a method where it makes sense to do so, etc
+  * for example (this might change) the Forge EventBus system was torn out and replaced with the NeoForge EventBus
+
+when i need access to a new minecraft class, i'll typically make the api interface and implement it on a related vanilla class with a mixin. however some of the new classes im reaching are stuff like `Block` and `Item` where i will need to implement a shim, and kind of plug the registration process (constructor reg! :D) into the neoforge registration process
 
 ## neoforge layer system
 
