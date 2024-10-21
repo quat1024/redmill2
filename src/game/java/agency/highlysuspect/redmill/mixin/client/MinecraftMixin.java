@@ -4,6 +4,9 @@ import agency.highlysuspect.redmill.oldschool.net.minecraft.client.IMinecraft;
 import agency.highlysuspect.redmill.oldschool.net.minecraft.client.entity.IEntityClientPlayerMP;
 import agency.highlysuspect.redmill.oldschool.net.minecraft.client.multiplayer.IWorldClient;
 import agency.highlysuspect.redmill.oldschool.net.minecraft.client.settings.IGameSettings;
+import agency.highlysuspect.redmill.oldschool.net.minecraft.crash.ICrashReport;
+import agency.highlysuspect.redmill.oldschool.net.minecraft.crash.RCrashReport;
+import net.minecraft.CrashReport;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import org.spongepowered.asm.mixin.Mixin;
@@ -16,13 +19,18 @@ public class MinecraftMixin implements IMinecraft {
 	@Shadow ClientLevel level;
 	
 	@Override
+	public void displayCrashReport(ICrashReport crash) {
+		instance.emergencySaveAndCrash(crash.redmill$getDelegate());
+	}
+	
+	@Override
 	public IGameSettings get_gameSettings() {
-		return null;
+		return (IGameSettings) instance.options;
 	}
 	
 	@Override
 	public IEntityClientPlayerMP get_thePlayer() {
-		return null;
+		return null; //RM-TODO
 	}
 	
 	@Override

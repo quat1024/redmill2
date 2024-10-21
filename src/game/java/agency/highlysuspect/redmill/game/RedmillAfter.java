@@ -1,8 +1,8 @@
 package agency.highlysuspect.redmill.game;
 
-import agency.highlysuspect.redmill.oldschool.cpw.mods.fml.common.LoadController;
+import agency.highlysuspect.redmill.oldschool.cpw.mods.fml.client.FMLClientHandler;
+import agency.highlysuspect.redmill.oldschool.cpw.mods.fml.common.FMLCommonHandler;
 import agency.highlysuspect.redmill.oldschool.cpw.mods.fml.common.Loader;
-import agency.highlysuspect.redmill.oldschool.cpw.mods.fml.common.LoaderState;
 import agency.highlysuspect.redmill.svc.Consts;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
@@ -17,5 +17,13 @@ public class RedmillAfter {
 		//It's time to start the init process
 		Loader loady = Loader.instance();
 		loady.redmill$loadMods_afterConstruction();
+		
+		//This leaves the loader in INITIALIZATION state before distributing the event
+		//Process continues from FMLClientHandler.finishMinecraftLoading -> Loader.initializeMods
+		
+		//TODO...?
+		if(FMLCommonHandler.instance().get_sidedDelegate() instanceof FMLClientHandler client) {
+			client.finishMinecraftLoading();
+		}
 	}
 }

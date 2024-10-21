@@ -1,7 +1,9 @@
 package agency.highlysuspect.redmill.game;
 
+import agency.highlysuspect.redmill.oldschool.cpw.mods.fml.client.FMLClientHandler;
 import agency.highlysuspect.redmill.oldschool.cpw.mods.fml.common.Loader;
 import agency.highlysuspect.redmill.oldschool.cpw.mods.fml.relauncher.FMLInjectionData;
+import agency.highlysuspect.redmill.oldschool.net.minecraft.client.RMinecraft;
 import agency.highlysuspect.redmill.oldschool.net.minecraftforge.common.MinecraftForge;
 import agency.highlysuspect.redmill.svc.Consts;
 import agency.highlysuspect.redmill.svc.Globals;
@@ -14,7 +16,9 @@ public class RedmillBefore {
 	public RedmillBefore(IEventBus modBus) {
 		Consts.LOG.info("RedMill mod loading");
 		
-		MinecraftForge.initialize();
+		//TODO: WILL CRASH ON SERVERS
+		FMLClientHandler clientHandler = new FMLClientHandler();
+		clientHandler.beginMinecraftLoading(RMinecraft.getMinecraft()); //calls MinecraftForge.initialize
 		
 		//injection data
 		FMLInjectionData.redmill$build();

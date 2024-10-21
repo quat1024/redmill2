@@ -21,6 +21,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
+import net.neoforged.fml.loading.progress.ProgressMeter;
+import net.neoforged.fml.loading.progress.StartupNotificationManager;
 import net.neoforged.fml.util.LoaderException;
 
 import java.lang.reflect.InvocationTargetException;
@@ -41,11 +43,16 @@ public class LoadController {
 	private ModContainer activeContainer;
 	private BiMap modObjectList;
 	
+	private ProgressMeter redmill$progressMeter;
+	
 	public LoadController(Loader var1) {
 		this.loader = var1;
 		this.masterChannel = new EventBus("FMLMainChannel");
 		this.masterChannel.register(this);
 		this.state = LoaderState.NOINIT;
+		
+		redmill$progressMeter = StartupNotificationManager.addProgressBar("Red Mill LoadController",
+			LoaderState.AVAILABLE.ordinal());
 	}
 	
 	@Subscribe
@@ -113,6 +120,15 @@ public class LoadController {
 			} else {
 				FMLLog.severe("The ForgeModLoader state engine has become corrupted. Probably, a state was missed by and invalid modification to a base classForgeModLoader depends on. This is a critical error and not recoverable. Investigate any modifications to base classes outside ofForgeModLoader, especially Optifine, to see if there are fixes available.", new Object[0]);
 				throw new RuntimeException("The ForgeModLoader state engine is invalid");
+			}
+		}
+		
+		if(redmill$progressMeter != null) {
+			redmill$progressMeter.setAbsolute(this.state.ordinal());
+			redmill$progressMeter.label("Red Mill LoadController: " + this.state.get_name());
+			if(this.state == LoaderState.AVAILABLE) {
+				redmill$progressMeter.complete();
+				redmill$progressMeter = null;
 			}
 		}
 	}

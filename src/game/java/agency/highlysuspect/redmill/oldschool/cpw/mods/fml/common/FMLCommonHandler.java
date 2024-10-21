@@ -10,19 +10,16 @@ import agency.highlysuspect.redmill.game.support.ObjectsSupport;
 import agency.highlysuspect.redmill.oldschool.cpw.mods.fml.common.registry.TickRegistry;
 import agency.highlysuspect.redmill.oldschool.cpw.mods.fml.relauncher.Side;
 import agency.highlysuspect.redmill.oldschool.net.minecraftforge.common.MinecraftForge;
+import agency.highlysuspect.redmill.svc.Globals;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.MapMaker;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import net.neoforged.fml.ModContainer;
-import net.neoforged.fml.loading.FMLEnvironment;
 
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -102,9 +99,7 @@ public class FMLCommonHandler {
 	}
 	
 	public Side getSide() {
-		//RM-TODO: call thru sidedDelegate
-		//return this.get_sidedDelegate().getSide();
-		return Side.redmill$fromModern(FMLEnvironment.dist);
+		return this.get_sidedDelegate().getSide();
 	}
 	
 //	public Side getEffectiveSide() {
@@ -120,13 +115,15 @@ public class FMLCommonHandler {
 		
 	}
 	
-	private Class findMinecraftForge() {
+	private Class<MinecraftForge> findMinecraftForge() {
 		if (this.get_forge() == null && !this.get_noForge()) {
 			try {
 				//this.set_forge(Class.forName("net.minecraftforge.common.MinecraftForge"));
-				this.set_forge(Class.forName("agency.highlysuspect.redmill.oldschool.net.minecraftforge.common.MinecraftForge"));
+				//this.set_forge(Class.forName("agency.highlysuspect.redmill.oldschool.net.minecraftforge.common.MinecraftForge"));
+				this.set_forge(MinecraftForge.class); //it's in the same classloader anyway who gives a shit
 			} catch (Exception var2) {
-				this.set_noForge(true);
+				throw Globals.mkRethrow(var2, "Couldn't set MinecraftForge???");
+				//this.set_noForge(true);
 			}
 		}
 		
@@ -140,7 +137,8 @@ public class FMLCommonHandler {
 			try {
 				return this.findMinecraftForge().getMethod(var1).invoke((Object)null);
 			} catch (Exception var3) {
-				return null;
+				//return null;
+				throw Globals.mkRethrow(var3, "Failed to callForgeMethod");
 			}
 		}
 	}
@@ -378,11 +376,11 @@ public class FMLCommonHandler {
 		this.scheduledServerTicks = var1;
 	}
 	
-	public Class get_forge() {
+	public Class<MinecraftForge> get_forge() {
 		return this.forge;
 	}
 	
-	public void set_forge(Class var1) {
+	public void set_forge(Class<MinecraftForge> var1) {
 		this.forge = var1;
 	}
 	

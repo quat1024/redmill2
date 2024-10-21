@@ -504,13 +504,13 @@ public class Loader {
 	}
 	
 	public void initializeMods() {
-		this.get_modController().distributeStateMessage(LoaderState.INITIALIZATION, new Object[0]);
+		this.get_modController().distributeStateMessage(LoaderState.INITIALIZATION);
 		this.get_modController().transition(LoaderState.POSTINITIALIZATION);
 		//this.get_modController().distributeStateMessage(FMLInterModComms.IMCEvent.class);
-		this.get_modController().distributeStateMessage(LoaderState.POSTINITIALIZATION, new Object[0]);
+		this.get_modController().distributeStateMessage(LoaderState.POSTINITIALIZATION);
 		this.get_modController().transition(LoaderState.AVAILABLE);
-		this.get_modController().distributeStateMessage(LoaderState.AVAILABLE, new Object[0]);
-		FMLLog.info("Forge Mod Loader has successfully loaded %d mod%s", new Object[]{this.get_mods().size(), this.get_mods().size() == 1 ? "" : "s"});
+		this.get_modController().distributeStateMessage(LoaderState.AVAILABLE);
+		FMLLog.info("Forge Mod Loader has successfully loaded %d mod%s", this.get_mods().size(), this.get_mods().size() == 1 ? "" : "s");
 	}
 	
 //	public ICrashCallable getCallableCrashInformation() {
