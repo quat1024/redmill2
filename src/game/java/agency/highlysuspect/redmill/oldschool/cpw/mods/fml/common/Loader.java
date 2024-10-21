@@ -331,13 +331,13 @@ public class Loader {
 		//this.set_mods(Lists.newArrayList());
 		//this.set_namedMods(Maps.newHashMap());
 		this.set_modController(new LoadController(this));
-		//this.get_modController().transition(LoaderState.LOADING);
+		this.get_modController().transition(LoaderState.LOADING);
 		//ModDiscoverer var1 = this.identifyMods();
 		//this.disableRequestedMods();
 		//FMLLog.fine("Reloading logging properties from %s", new Object[]{this.get_loggingProperties().getPath()});
 		//FMLRelaunchLog.loadLogConfiguration(this.get_loggingProperties());
 		//FMLLog.fine("Reloaded logging properties", new Object[0]);
-		//this.get_modController().distributeStateMessage(FMLLoadEvent.class);
+		this.get_modController().distributeStateMessage(FMLLoadEvent.class);
 		//this.sortModList();
 		//this.set_mods(ImmutableList.copyOf(this.get_mods()));
 //		Iterator var2 = var1.getNonModLibs().iterator();
@@ -355,11 +355,14 @@ public class Loader {
 //			}
 //		}
 //
-//		this.get_modController().transition(LoaderState.CONSTRUCTING);
-//		this.get_modController().distributeStateMessage(LoaderState.CONSTRUCTING, new Object[]{
-//			null, //this.get_modClassLoader(),
-//			null, //var1.getASMTable()
-//		});
+		this.get_modController().transition(LoaderState.CONSTRUCTING);
+	}
+	
+	public void redmill$loadMods_afterConstruction() {
+		this.get_modController().distributeStateMessage(LoaderState.CONSTRUCTING, new Object[]{
+			null, //this.get_modClassLoader(),
+			null, //var1.getASMTable()
+		});
 //		FMLLog.fine("Mod signature data", new Object[0]);
 //		var2 = this.getActiveModList().iterator();
 //
@@ -372,12 +375,12 @@ public class Loader {
 //			FMLLog.fine("No user mod signature data found", new Object[0]);
 //		}
 //
-//		this.get_modController().transition(LoaderState.PREINITIALIZATION);
-//		this.get_modController().distributeStateMessage(LoaderState.PREINITIALIZATION, new Object[]{
-//			null, //var1.getASMTable(),
-//			this.get_canonicalConfigDir()
-//		});
-//		this.get_modController().transition(LoaderState.INITIALIZATION);
+		this.get_modController().transition(LoaderState.PREINITIALIZATION);
+		this.get_modController().distributeStateMessage(LoaderState.PREINITIALIZATION, new Object[]{
+			null, //var1.getASMTable(),
+			this.get_canonicalConfigDir()
+		});
+		this.get_modController().transition(LoaderState.INITIALIZATION);
 	}
 	
 	private void disableRequestedMods() {

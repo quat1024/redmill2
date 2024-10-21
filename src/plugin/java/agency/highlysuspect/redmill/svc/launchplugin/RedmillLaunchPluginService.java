@@ -198,7 +198,7 @@ public class RedmillLaunchPluginService implements ILaunchPluginService {
 	}
 	
 	static {
-		processAndDumpFroge();
+		//processAndDumpFroge();
 		//System.exit(621);
 	}
 }

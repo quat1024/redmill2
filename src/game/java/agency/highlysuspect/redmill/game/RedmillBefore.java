@@ -14,6 +14,8 @@ public class RedmillBefore {
 	public RedmillBefore(IEventBus modBus) {
 		Consts.LOG.info("RedMill mod loading");
 		
+		MinecraftForge.initialize();
+		
 		//injection data
 		FMLInjectionData.redmill$build();
 		Loader.injectData(FMLInjectionData.data());
@@ -24,9 +26,8 @@ public class RedmillBefore {
 			loady.redmill$injectContainer(ext);
 		}
 		
-		//Prepare for mod loading
+		//Prepare for mod loading.
+		//Leaves the LoadController in the CONSTRUCTING state
 		loady.loadMods();
-		
-		MinecraftForge.initialize();
 	}
 }

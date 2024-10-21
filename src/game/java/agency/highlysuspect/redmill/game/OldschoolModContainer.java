@@ -68,7 +68,7 @@ public class OldschoolModContainer implements ModContainer {
 	@Override
 	public boolean registerBus(EventBus var1, LoadController var2) {
 		//TODO
-		return false;
+		return true;
 	}
 	
 	@Override
