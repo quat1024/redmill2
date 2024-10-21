@@ -1,7 +1,6 @@
 package agency.highlysuspect.redmill.svc.util;
 
 import agency.highlysuspect.redmill.svc.Consts;
-import agency.highlysuspect.redmill.svc.languageloader.RedmillModContainer;
 import net.neoforged.bus.api.IEventBus;
 
 import java.lang.reflect.Field;
@@ -9,10 +8,6 @@ import java.util.Objects;
 
 public interface IBastion {
 	IEventBus getEventBus();
-	
-	Class<?> loadModClass(RedmillModContainer rmc);
-	Object constructModClass(RedmillModContainer rmc);
-	void preinitMod(RedmillModContainer rmc);
 	
 	@SuppressWarnings("unchecked")
 	static IBastion getInstance(ModuleLayer gameLayer) {

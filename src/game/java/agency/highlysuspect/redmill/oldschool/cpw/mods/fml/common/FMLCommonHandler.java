@@ -9,6 +9,7 @@ import agency.highlysuspect.redmill.game.logging.LegacyLogger;
 import agency.highlysuspect.redmill.game.support.ObjectsSupport;
 import agency.highlysuspect.redmill.oldschool.cpw.mods.fml.common.registry.TickRegistry;
 import agency.highlysuspect.redmill.oldschool.cpw.mods.fml.relauncher.Side;
+import agency.highlysuspect.redmill.oldschool.net.minecraftforge.common.MinecraftForge;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
@@ -33,7 +34,7 @@ public class FMLCommonHandler {
 	private IFMLSidedHandler sidedDelegate;
 	private List scheduledClientTicks = Lists.newArrayList();
 	private List scheduledServerTicks = Lists.newArrayList();
-	private Class forge;
+	private Class<MinecraftForge> forge;
 	private boolean noForge;
 	private List brandings;
 	//private List crashCallables = Lists.newArrayList(new ICrashCallable[]{Loader.instance().getCallableCrashInformation()});

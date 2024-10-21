@@ -12,6 +12,8 @@ import net.neoforged.neoforgespi.language.ModFileScanData;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Type;
 
+import java.util.Objects;
+
 public class RedmillModContainer extends ModContainer {
 	
 	public RedmillModContainer(IModInfo info, ModFileScanData modFileScanData, ModuleLayer gameLayer) {
@@ -67,10 +69,22 @@ public class RedmillModContainer extends ModContainer {
 	@Override
 	protected void constructMod() {
 		Consts.windowLog("Constructing {}", modContainerExt.oldModid);
-		modClass = bastion.loadModClass(this);
-		modInstance = bastion.constructModClass(this);
 		
-		bastion.preinitMod(this);
+		if(modClassName != null) {
+			Consts.LOG.debug("Loading entrypoint class {}", modClassName);
+			try {
+				modClass = Objects.requireNonNull(Class.forName(module, modClassName));
+			} catch (Exception e) {
+				throw Globals.mkRethrow(e, "Failed to load redmill entrypoint class " + modClassName);
+			}
+			
+			Consts.LOG.debug("Constructing mod class {}", modClass);
+			try {
+				modInstance = modClass.getConstructor().newInstance();
+			} catch (Exception e) {
+				throw Globals.mkRethrow(e, "Failed to construct redmill entrypoint " + modClass.getName());
+			}
+		}
 	}
 	
 	private static @Nullable String findEntrypoint(ModFileScanData mfsd, String oldModid) {

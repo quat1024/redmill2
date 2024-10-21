@@ -1,21 +1,14 @@
 package agency.highlysuspect.redmill.game;
 
-import agency.highlysuspect.redmill.oldschool.cpw.mods.fml.common.Loader;
-import agency.highlysuspect.redmill.oldschool.cpw.mods.fml.common.ModContainer;
 import agency.highlysuspect.redmill.svc.Consts;
-import agency.highlysuspect.redmill.svc.Globals;
-import agency.highlysuspect.redmill.svc.languageloader.RedmillModContainer;
-import agency.highlysuspect.redmill.oldschool.cpw.mods.fml.common.Mod;
-import agency.highlysuspect.redmill.oldschool.cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import agency.highlysuspect.redmill.svc.util.IBastion;
 import net.neoforged.bus.api.IEventBus;
-import org.jetbrains.annotations.Nullable;
 
-import java.io.File;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.Objects;
 
+/**
+ * TODO I don't actually think we need this
+ */
 @SuppressWarnings("unused") //reflectively accessed
 public class Bastion implements IBastion {
 	static {
@@ -32,54 +25,5 @@ public class Bastion implements IBastion {
 	@Override
 	public IEventBus getEventBus() {
 		return EVENT_BUS;
-	}
-	
-	@Override
-	public @Nullable Class<?> loadModClass(RedmillModContainer rmc) {
-		if(rmc.modClassName == null) return null;
-		
-		Consts.LOG.debug("Loading entrypoint class {}", rmc.modClassName);
-		try {
-			return Objects.requireNonNull(Class.forName(rmc.module, rmc.modClassName));
-		} catch (Exception e) {
-			throw Globals.mkRethrow(e, "Failed to load redmill entrypoint class " + rmc.modClassName);
-		}
-	}
-	
-	@Override
-	public Object constructModClass(RedmillModContainer rmc) {
-		if(rmc.modClass == null) return null;
-		
-		Consts.LOG.debug("Constructing mod class {}", rmc.modClass);
-		try {
-			return rmc.modClass.getConstructor().newInstance();
-		} catch (Exception e) {
-			throw Globals.mkRethrow(e, "Failed to construct redmill entrypoint " + rmc.modClass.getName());
-		}
-	}
-	
-	public void preinitMod(RedmillModContainer rmc) {
-		if(rmc.modInstance == null) return;
-		
-		ModContainer oldschoolModContainer = Loader.instance().omcsByModernModid.get(rmc.modContainerExt.modernModid);
-		
-		FMLPreInitializationEvent preinit = new FMLPreInitializationEvent(null, Loader.instance().getConfigDir());
-		preinit.applyModContainer(oldschoolModContainer);
-		
-		try {
-			for(Method method : rmc.modClass.getMethods()) {
-				Object preInit = method.getAnnotation(Mod.PreInit.class);
-				if(preInit != null) {
-					Consts.LOG.debug("Found @RPreInit method {}", method);
-					if(Modifier.isStatic(method.getModifiers())) {
-						method.invoke(preinit);
-					} else {
-						method.invoke(rmc.modInstance, preinit);
-					}
-				}
-			}
-		} catch (Exception e) {
-			throw Globals.mkRethrow(e, "failed to do preinit stuff");
-		}
 	}
 }

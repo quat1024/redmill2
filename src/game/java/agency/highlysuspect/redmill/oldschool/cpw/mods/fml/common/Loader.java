@@ -359,10 +359,10 @@ public class Loader {
 	}
 	
 	public void redmill$loadMods_afterConstruction() {
-		this.get_modController().distributeStateMessage(LoaderState.CONSTRUCTING, new Object[]{
+		this.get_modController().distributeStateMessage(LoaderState.CONSTRUCTING,
 			null, //this.get_modClassLoader(),
-			null, //var1.getASMTable()
-		});
+			null //var1.getASMTable()
+		);
 //		FMLLog.fine("Mod signature data", new Object[0]);
 //		var2 = this.getActiveModList().iterator();
 //
@@ -376,10 +376,10 @@ public class Loader {
 //		}
 //
 		this.get_modController().transition(LoaderState.PREINITIALIZATION);
-		this.get_modController().distributeStateMessage(LoaderState.PREINITIALIZATION, new Object[]{
+		this.get_modController().distributeStateMessage(LoaderState.PREINITIALIZATION,
 			null, //var1.getASMTable(),
 			this.get_canonicalConfigDir()
-		});
+		);
 		this.get_modController().transition(LoaderState.INITIALIZATION);
 	}
 	
